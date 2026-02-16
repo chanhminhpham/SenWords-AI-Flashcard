@@ -1,25 +1,11 @@
-import { Stack, Link } from "expo-router";
+import { View, Text } from 'react-native';
 
-import { View } from "react-native";
-
-import { Button } from "@/components/Button";
-import { Container } from "@/components/Container";
-import { ScreenContent } from "@/components/ScreenContent";
-
-export default function Home() {
+// Expo Router requires default export for route files
+export default function HomeScreen() {
   return (
-    <View className={styles.container}>
-      <Stack.Screen options={{ title: "Home" }} />
-      <Container>
-        <ScreenContent path="app/index.tsx" title="Home"></ScreenContent>
-        <Link href={{ pathname: "/details", params: { name: "Dan" } }} asChild>
-          <Button title="Show Details" />
-        </Link>
-      </Container>
+    <View className="flex-1 items-center justify-center bg-white">
+      <Text className="text-xl font-bold">AI Flash Card</Text>
+      <Text className="mt-2 text-gray-500">Project initialized successfully</Text>
     </View>
   );
 }
-
-const styles = {
-  container: "flex flex-1 bg-white",
-};
