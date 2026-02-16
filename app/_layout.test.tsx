@@ -45,7 +45,7 @@ jest.mock('react-native-paper', () => {
           testID: 'paper-provider',
           accessibilityHint: JSON.stringify({ dark: theme?.dark }),
         },
-        children,
+        children
       ),
     MD3LightTheme: { colors: {} },
     MD3DarkTheme: { colors: {} },
@@ -106,7 +106,7 @@ describe('RootLayout - Font Loading (8.6)', () => {
         NunitoSans_500Medium: expect.anything(),
         NunitoSans_600SemiBold: expect.anything(),
         NunitoSans_700Bold: expect.anything(),
-      }),
+      })
     );
   });
 

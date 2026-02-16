@@ -53,7 +53,7 @@ describe('useDeviceTier', () => {
     renderHook(() => useDeviceTier());
     expect(AccessibilityInfo.addEventListener).toHaveBeenCalledWith(
       'reduceMotionChanged',
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 

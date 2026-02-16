@@ -28,8 +28,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setDeviceTier: (tier) => set({ deviceTier: tier }),
   setSystemReduceMotion: (enabled) => set({ systemReduceMotion: enabled }),
-  setUserAnimationOverride: (override) =>
-    set({ userAnimationOverride: override }),
+  setUserAnimationOverride: (override) => set({ userAnimationOverride: override }),
 
   shouldReduceMotion: () => {
     const { systemReduceMotion, userAnimationOverride, deviceTier } = get();

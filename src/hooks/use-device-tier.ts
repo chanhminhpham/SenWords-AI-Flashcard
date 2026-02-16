@@ -2,10 +2,7 @@ import * as Device from 'expo-device';
 import { useEffect } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
-import {
-  BUDGET_RAM_THRESHOLD,
-  type DeviceTier,
-} from '@/config/device-tiers.config';
+import { BUDGET_RAM_THRESHOLD, type DeviceTier } from '@/config/device-tiers.config';
 import { useAppStore } from '@/stores/app.store';
 
 /**
@@ -20,9 +17,7 @@ export function useDeviceTier() {
     // Detect device tier from total RAM
     const totalMemory = Device.totalMemory;
     const tier: DeviceTier =
-      totalMemory !== null && totalMemory <= BUDGET_RAM_THRESHOLD
-        ? 'budget'
-        : 'standard';
+      totalMemory !== null && totalMemory <= BUDGET_RAM_THRESHOLD ? 'budget' : 'standard';
     setDeviceTier(tier);
 
     // Read initial system reduce-motion preference
@@ -31,12 +26,9 @@ export function useDeviceTier() {
     });
 
     // Listen for system reduce-motion changes
-    const subscription = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      (enabled) => {
-        setSystemReduceMotion(enabled);
-      },
-    );
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', (enabled) => {
+      setSystemReduceMotion(enabled);
+    });
 
     return () => {
       subscription.remove();
