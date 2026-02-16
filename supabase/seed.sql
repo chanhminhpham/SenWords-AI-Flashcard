@@ -1,0 +1,1 @@
+-- Base dictionary seed data (to be populated in Story 1.5)

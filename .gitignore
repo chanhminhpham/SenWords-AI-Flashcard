@@ -18,6 +18,9 @@ expo-env.d.ts
 ios
 android
 
+# Test coverage
+coverage/
+
 # macOS
 .DS_Store
 

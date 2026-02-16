@@ -1,7 +1,21 @@
-import "../global.css";
+import '../global.css';
 
-import { Stack } from "expo-router";
+import * as Sentry from '@sentry/react-native';
+import { Stack } from 'expo-router';
 
-export default function Layout() {
+import { ENV, validateEnv } from '@/config/env';
+
+// Init Sentry first so validateEnv() crashes are reported
+Sentry.init({
+  dsn: ENV.SENTRY_DSN,
+  enabled: ENV.SENTRY_DSN.length > 0,
+});
+
+validateEnv();
+
+// Expo Router requires default export for route files
+function RootLayout() {
   return <Stack />;
 }
+
+export default Sentry.wrap(RootLayout);
