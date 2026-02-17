@@ -37,6 +37,23 @@ jest.mock('@/config/env', () => ({
   validateEnv: jest.fn(),
 }));
 
+jest.mock('@/db/use-database', () => ({
+  useDatabase: jest.fn().mockReturnValue({ success: true, error: undefined }),
+}));
+
+jest.mock('@/services/dictionary/dictionary.service', () => ({
+  loadDictionary: jest.fn().mockResolvedValue({ success: true, count: 100 }),
+}));
+
+jest.mock('@tanstack/react-query', () => {
+  const RN = require('react-native');
+  return {
+    QueryClient: jest.fn().mockImplementation(() => ({})),
+    QueryClientProvider: ({ children }: { children: unknown }) =>
+      require('react').createElement(RN.View, { testID: 'query-provider' }, children),
+  };
+});
+
 jest.mock('@/hooks/use-device-tier', () => ({
   useDeviceTier: jest.fn(),
 }));

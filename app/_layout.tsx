@@ -3,6 +3,7 @@ import '../global.css';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react-native';
 import {
   NunitoSans_300Light,
@@ -20,8 +21,10 @@ import { I18nextProvider } from 'react-i18next';
 import { PaperProvider } from 'react-native-paper';
 
 import { ENV, validateEnv } from '@/config/env';
+import { useDatabase } from '@/db/use-database';
 import { initI18n } from '@/i18n';
 import { useDeviceTier } from '@/hooks/use-device-tier';
+import { loadDictionary } from '@/services/dictionary/dictionary.service';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { senWordDarkTheme } from '@/theme/dark-theme';
@@ -42,6 +45,16 @@ const i18nInstance = initI18n();
 // (4) Prevent splash screen auto-hide until fonts + auth are ready
 SplashScreen.preventAutoHideAsync();
 
+// (5) TanStack Query client — module scope so it persists across re-renders
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes
+    },
+  },
+});
+
 // Expo Router requires default export for route files
 function RootLayout() {
   const colorScheme = useColorScheme();
@@ -49,6 +62,7 @@ function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   useDeviceTier();
+  const { success: dbReady, error: dbError } = useDatabase();
 
   const session = useAuthStore((s) => s.session);
   const trialMode = useAuthStore((s) => s.trialMode);
@@ -69,21 +83,35 @@ function RootLayout() {
     initializeAuth();
   }, [initializeAuth]);
 
-  // Hide splash when fonts + auth are ready
+  // Load dictionary into SQLite after DB migrations complete
   useEffect(() => {
-    if ((fontsLoaded || fontError) && !authLoading) {
+    if (dbReady) {
+      loadDictionary().catch((err) =>
+        Sentry.captureException(err, { tags: { module: 'dictionary-loading' } })
+      );
+    }
+  }, [dbReady]);
+
+  // Hide splash when fonts + auth + DB are ready
+  useEffect(() => {
+    if ((fontsLoaded || fontError) && !authLoading && (dbReady || dbError)) {
       if (fontError) {
         Sentry.captureException(fontError, {
           tags: { module: 'font-loading' },
         });
       }
+      if (dbError) {
+        Sentry.captureException(dbError, {
+          tags: { module: 'database-migration' },
+        });
+      }
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError, authLoading]);
+  }, [fontsLoaded, fontError, authLoading, dbReady, dbError]);
 
   // Auth-based routing
   useEffect(() => {
-    if (authLoading || (!fontsLoaded && !fontError)) return;
+    if (authLoading || (!fontsLoaded && !fontError) || (!dbReady && !dbError)) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -103,6 +131,8 @@ function RootLayout() {
     fontError,
     router,
     onboardingCompleted,
+    dbReady,
+    dbError,
   ]);
 
   if (!fontsLoaded && !fontError) {
@@ -110,12 +140,14 @@ function RootLayout() {
   }
 
   return (
-    <I18nextProvider i18n={i18nInstance}>
-      <PaperProvider theme={theme}>
-        <Stack screenOptions={{ headerShown: false }} />
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      </PaperProvider>
-    </I18nextProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nextProvider i18n={i18nInstance}>
+        <PaperProvider theme={theme}>
+          <Stack screenOptions={{ headerShown: false }} />
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        </PaperProvider>
+      </I18nextProvider>
+    </QueryClientProvider>
   );
 }
 
