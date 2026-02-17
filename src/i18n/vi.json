@@ -1,0 +1,121 @@
+{
+  "welcome": {
+    "tagline": "Từ vựng nở từ gốc",
+    "startButton": "Bắt đầu"
+  },
+  "ageVerification": {
+    "title": "Xác minh tuổi",
+    "subtitle": "Ngày sinh của bạn",
+    "dayLabel": "Ngày",
+    "monthLabel": "Tháng",
+    "yearLabel": "Năm",
+    "verifyButton": "Tiếp tục",
+    "errorMessage": "Vui lòng nhập ngày sinh hợp lệ",
+    "rejectedMessage": "Ứng dụng dành cho người từ 13 tuổi trở lên"
+  },
+  "privacyConsent": {
+    "title": "Chính sách Bảo mật",
+    "agreeCheckbox": "Tôi đồng ý với Chính sách Bảo mật",
+    "continueButton": "Tiếp tục"
+  },
+  "privacyPolicy": {
+    "fullText": "CHÍNH SÁCH BẢO MẬT — SenWords\n\nCập nhật lần cuối: 17/02/2026\n\n1. THU THẬP DỮ LIỆU\n\nChúng tôi thu thập các thông tin sau khi bạn sử dụng SenWords:\n\n• Thông tin tài khoản: Tên hiển thị, email (qua đăng nhập SSO với Google, Facebook hoặc Apple)\n• Ngày sinh: Để xác minh tuổi (yêu cầu từ 13 tuổi trở lên)\n• Dữ liệu học tập: Tiến trình học từ vựng, điểm số, mục tiêu học tập\n• Thông tin thiết bị: Loại thiết bị, phiên bản hệ điều hành (để tối ưu hiệu suất)\n\nQuan trọng: Chúng tôi KHÔNG thu thập bất kỳ dữ liệu cá nhân nào trước khi bạn xác minh tuổi và đồng ý với chính sách này.\n\n2. LƯU TRỮ DỮ LIỆU\n\n• Dữ liệu được lưu trữ an toàn trên nền tảng Supabase với mã hóa AES-256\n• Token xác thực được mã hóa AES-256-GCM trên thiết bị của bạn\n• Chúng tôi không lưu trữ mật khẩu — xác thực qua nhà cung cấp SSO\n\n3. CHIA SẺ DỮ LIỆU\n\nChúng tôi KHÔNG bán hoặc chia sẻ dữ liệu cá nhân của bạn với bên thứ ba, ngoại trừ:\n\n• Nhà cung cấp SSO (Google, Facebook, Apple): Chỉ để xác thực đăng nhập\n• Dịch vụ phân tích lỗi (Sentry): Chỉ dữ liệu kỹ thuật ẩn danh để cải thiện ứng dụng\n• Yêu cầu pháp lý: Khi được yêu cầu bởi cơ quan chức năng có thẩm quyền\n\n4. QUYỀN CỦA BẠN\n\nBạn có các quyền sau đối với dữ liệu cá nhân:\n\n• Quyền truy cập: Xem tất cả dữ liệu chúng tôi lưu trữ về bạn\n• Quyền xóa: Yêu cầu xóa toàn bộ dữ liệu cá nhân\n• Quyền xuất: Tải xuống dữ liệu của bạn ở định dạng phổ biến\n• Quyền thu hồi: Rút lại sự đồng ý bất cứ lúc nào\n\n5. CHÍNH SÁCH VỀ TUỔI\n\n• Ứng dụng SenWords dành cho người từ 13 tuổi trở lên\n• Người dùng dưới 13 tuổi không thể tạo tài khoản hoặc sử dụng ứng dụng\n• Nếu phát hiện người dùng dưới 13 tuổi, tài khoản sẽ bị vô hiệu hóa ngay lập tức\n\n6. THÔNG TIN LIÊN HỆ\n\nNếu bạn có câu hỏi về chính sách bảo mật, vui lòng liên hệ:\n• Email: privacy@senwords.app\n• Địa chỉ: [Địa chỉ công ty]\n\n7. THAY ĐỔI CHÍNH SÁCH\n\nChúng tôi có thể cập nhật chính sách này. Khi có thay đổi quan trọng, bạn sẽ được thông báo qua ứng dụng."
+  },
+  "goalSelection": {
+    "title": "Bạn muốn học tiếng Anh để làm gì?",
+    "continueButton": "Tiếp tục",
+    "skipButton": "Bỏ qua — bắt đầu với Giao tiếp cơ bản",
+    "manualLevelButton": "Tôi muốn tự chọn trình độ",
+    "levelPicker": {
+      "title": "Chọn trình độ của bạn",
+      "confirmButton": "Xác nhận",
+      "backButton": "Quay lại chọn mục tiêu"
+    }
+  },
+  "goals": {
+    "ielts": {
+      "label": "IELTS",
+      "description": "Chuẩn bị kỳ thi"
+    },
+    "business": {
+      "label": "Business",
+      "description": "Tiếng Anh công sở"
+    },
+    "travel": {
+      "label": "Du lịch",
+      "description": "Giao tiếp khi du lịch"
+    },
+    "reading": {
+      "label": "Đọc sách",
+      "description": "Đọc sách tiếng Anh"
+    },
+    "movies": {
+      "label": "Xem phim",
+      "description": "Xem phim không phụ đề"
+    },
+    "conversation": {
+      "label": "Giao tiếp chung",
+      "description": "Nói tiếng Anh hàng ngày"
+    }
+  },
+  "levels": {
+    "beginner": {
+      "label": "Người mới bắt đầu",
+      "description": "Mới bắt đầu học tiếng Anh"
+    },
+    "preIntermediate": {
+      "label": "Trước trung cấp",
+      "description": "Hiểu được những điều cơ bản"
+    },
+    "intermediate": {
+      "label": "Trung cấp",
+      "description": "Có thể giao tiếp trong nhiều tình huống"
+    },
+    "upperIntermediate": {
+      "label": "Trên trung cấp",
+      "description": "Hiểu hầu hết nội dung tiếng Anh"
+    },
+    "undefined": "Không xác định"
+  },
+  "placementTest": {
+    "tutorialLabel": "Hướng dẫn",
+    "hintLeft": "← Chưa biết",
+    "hintRight": "Biết →",
+    "tutorial": {
+      "instruction": "Vuốt phải nếu bạn BIẾT từ này, vuốt trái nếu CHƯA BIẾT",
+      "hint": "Hãy thử vuốt thẻ này!"
+    }
+  },
+  "levelResult": {
+    "levelBadge": "Bạn đang ở: {{levelLabel}}",
+    "manualSummary": "Bạn đã tự chọn trình độ",
+    "testSummary": "Bạn biết {{correctCount}}/10 từ",
+    "startButton": "Bắt đầu học",
+    "featureUnlock": "Tính năng mở khóa:",
+    "featureSwipe": "• Vuốt phải/trái để học từ vựng",
+    "featureSwipeUp": "• Vuốt lên để khám phá thêm",
+    "featureLargerFonts": "• Chữ lớn hơn, giao diện đơn giản"
+  },
+  "encouragement": {
+    "beginner": "Bắt đầu từ gốc rễ — nền tảng vững chắc sẽ giúp bạn tiến xa!",
+    "preIntermediate": "Bạn đã có nền tảng tốt — hãy tiếp tục phát triển!",
+    "intermediate": "Tuyệt vời! Bạn đã nắm được nhiều từ vựng quan trọng!",
+    "upperIntermediate": "Ấn tượng! Vốn từ của bạn rất phong phú — hãy thử thách thêm!"
+  },
+  "components": {
+    "undoSnackbar": {
+      "defaultMessage": "Đã vuốt",
+      "actionLabel": "Hoàn tác"
+    }
+  },
+  "accessibility": {
+    "swipeRight": "Vuốt phải nếu biết từ này",
+    "swipeLeft": "Vuốt trái nếu chưa biết",
+    "undoAction": "Hoàn tác thao tác vuốt",
+    "tutorialCard": "Thẻ hướng dẫn vuốt — vuốt trái hoặc phải để thực hành",
+    "lotusAnimation": "Hình hoa sen — hiệu ứng kết quả",
+    "levelBadge": "Trình độ của bạn: {{levelLabel}}",
+    "goalCard": "Mục tiêu {{label}}: {{description}}",
+    "levelCard": "Trình độ {{label}}: {{description}}"
+  }
+}

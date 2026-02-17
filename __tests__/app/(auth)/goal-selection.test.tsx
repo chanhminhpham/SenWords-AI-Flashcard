@@ -37,9 +37,9 @@ describe('GoalSelectionScreen', () => {
     expect(screen.getByTestId('goal-card-conversation')).toBeTruthy();
   });
 
-  it('renders title in Vietnamese', () => {
+  it('renders title', () => {
     renderScreen();
-    expect(screen.getByText('Bạn muốn học tiếng Anh để làm gì?')).toBeTruthy();
+    expect(screen.getByText('goalSelection.title')).toBeTruthy();
   });
 
   it('renders skip button', () => {
@@ -71,7 +71,7 @@ describe('GoalSelectionScreen', () => {
     renderScreen();
     fireEvent.press(screen.getByTestId('manual-level-button'));
     expect(screen.getByTestId('level-picker-screen')).toBeTruthy();
-    expect(screen.getByText('Chọn trình độ của bạn')).toBeTruthy();
+    expect(screen.getByText('goalSelection.levelPicker.title')).toBeTruthy();
   });
 
   it('shows 4 level options in level picker', () => {

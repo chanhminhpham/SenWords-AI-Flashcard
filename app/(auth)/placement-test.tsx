@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native-paper';
 
 import { PlacementSwipeCard } from '@/components/features/onboarding/PlacementSwipeCard';
@@ -18,6 +19,7 @@ export default function PlacementTestScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showUndo, setShowUndo] = useState(false);
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   const recordSwipe = useOnboardingStore((s) => s.recordSwipe);
   const undoLastSwipe = useOnboardingStore((s) => s.undoLastSwipe);
@@ -58,10 +60,14 @@ export default function PlacementTestScreen() {
     <View className="flex-1 bg-app-bg dark:bg-app-bg-dark" testID="placement-test-screen">
       {/* Header with progress */}
       <View style={styles.header}>
-        <Text variant="titleMedium" testID="progress-counter">
+        <Text
+          variant="titleMedium"
+          testID="progress-counter"
+          accessibilityLiveRegion="polite"
+          accessibilityRole="text">
           {tutorialDone
             ? `${currentIndex + (isComplete ? 0 : 1)} / ${PLACEMENT_WORD_COUNT}`
-            : 'Hướng dẫn'}
+            : t('placementTest.tutorialLabel')}
         </Text>
       </View>
 
@@ -78,9 +84,11 @@ export default function PlacementTestScreen() {
       {tutorialDone && !isComplete && (
         <View style={styles.hints}>
           <Text style={[styles.hintLeft, { color: theme.colors.feedback.dontKnowText }]}>
-            ← Chưa biết
+            {t('placementTest.hintLeft')}
           </Text>
-          <Text style={[styles.hintRight, { color: theme.colors.feedback.know }]}>Biết →</Text>
+          <Text style={[styles.hintRight, { color: theme.colors.feedback.know }]}>
+            {t('placementTest.hintRight')}
+          </Text>
         </View>
       )}
 
@@ -89,7 +97,7 @@ export default function PlacementTestScreen() {
         visible={showUndo && tutorialDone}
         onDismiss={() => setShowUndo(false)}
         onUndo={handleUndo}
-        message="Đã vuốt"
+        message={t('components.undoSnackbar.defaultMessage')}
       />
     </View>
   );

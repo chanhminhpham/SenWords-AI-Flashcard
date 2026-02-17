@@ -1,0 +1,121 @@
+{
+  "welcome": {
+    "tagline": "Vocabulary blooms from roots",
+    "startButton": "Get Started"
+  },
+  "ageVerification": {
+    "title": "Age Verification",
+    "subtitle": "Your date of birth",
+    "dayLabel": "Day",
+    "monthLabel": "Month",
+    "yearLabel": "Year",
+    "verifyButton": "Continue",
+    "errorMessage": "Please enter a valid date of birth",
+    "rejectedMessage": "This app is for users aged 13 and above"
+  },
+  "privacyConsent": {
+    "title": "Privacy Policy",
+    "agreeCheckbox": "I agree to the Privacy Policy",
+    "continueButton": "Continue"
+  },
+  "privacyPolicy": {
+    "fullText": "PRIVACY POLICY — SenWords\n\nLast updated: 17/02/2026\n\n1. DATA COLLECTION\n\nWe collect the following information when you use SenWords:\n\n• Account information: Display name, email (via SSO login with Google, Facebook, or Apple)\n• Date of birth: For age verification (must be 13 years or older)\n• Learning data: Vocabulary learning progress, scores, learning goals\n• Device information: Device type, OS version (for performance optimization)\n\nImportant: We do NOT collect any personal data before you verify your age and agree to this policy.\n\n2. DATA STORAGE\n\n• Data is securely stored on the Supabase platform with AES-256 encryption\n• Authentication tokens are encrypted with AES-256-GCM on your device\n• We do not store passwords — authentication is via SSO providers\n\n3. DATA SHARING\n\nWe do NOT sell or share your personal data with third parties, except:\n\n• SSO providers (Google, Facebook, Apple): Only for login authentication\n• Error analytics service (Sentry): Only anonymous technical data to improve the app\n• Legal requirements: When required by authorized authorities\n\n4. YOUR RIGHTS\n\nYou have the following rights regarding your personal data:\n\n• Right to access: View all data we store about you\n• Right to delete: Request deletion of all personal data\n• Right to export: Download your data in a common format\n• Right to withdraw: Withdraw consent at any time\n\n5. AGE POLICY\n\n• SenWords is for users aged 13 and above\n• Users under 13 cannot create accounts or use the app\n• If an under-13 user is detected, the account will be immediately disabled\n\n6. CONTACT INFORMATION\n\nIf you have questions about the privacy policy, please contact:\n• Email: privacy@senwords.app\n• Address: [Company address]\n\n7. POLICY CHANGES\n\nWe may update this policy. When significant changes are made, you will be notified via the app."
+  },
+  "goalSelection": {
+    "title": "What do you want to learn English for?",
+    "continueButton": "Continue",
+    "skipButton": "Skip — start with Basic Conversation",
+    "manualLevelButton": "I want to choose my level",
+    "levelPicker": {
+      "title": "Choose your level",
+      "confirmButton": "Confirm",
+      "backButton": "Back to goal selection"
+    }
+  },
+  "goals": {
+    "ielts": {
+      "label": "IELTS",
+      "description": "Exam preparation"
+    },
+    "business": {
+      "label": "Business",
+      "description": "Business English"
+    },
+    "travel": {
+      "label": "Travel",
+      "description": "Travel communication"
+    },
+    "reading": {
+      "label": "Reading",
+      "description": "Read English books"
+    },
+    "movies": {
+      "label": "Movies",
+      "description": "Watch movies without subtitles"
+    },
+    "conversation": {
+      "label": "General Conversation",
+      "description": "Speak English daily"
+    }
+  },
+  "levels": {
+    "beginner": {
+      "label": "Beginner",
+      "description": "Just starting to learn English"
+    },
+    "preIntermediate": {
+      "label": "Pre-Intermediate",
+      "description": "Understand the basics"
+    },
+    "intermediate": {
+      "label": "Intermediate",
+      "description": "Can communicate in many situations"
+    },
+    "upperIntermediate": {
+      "label": "Upper Intermediate",
+      "description": "Understand most English content"
+    },
+    "undefined": "Unknown"
+  },
+  "placementTest": {
+    "tutorialLabel": "Tutorial",
+    "hintLeft": "← Don't know",
+    "hintRight": "Know →",
+    "tutorial": {
+      "instruction": "Swipe right if you KNOW this word, swipe left if you DON'T KNOW",
+      "hint": "Try swiping this card!"
+    }
+  },
+  "levelResult": {
+    "levelBadge": "You are at: {{levelLabel}}",
+    "manualSummary": "You chose your own level",
+    "testSummary": "You know {{correctCount}}/10 words",
+    "startButton": "Start Learning",
+    "featureUnlock": "Features unlocked:",
+    "featureSwipe": "• Swipe right/left to learn vocabulary",
+    "featureSwipeUp": "• Swipe up to explore more",
+    "featureLargerFonts": "• Larger fonts, simpler interface"
+  },
+  "encouragement": {
+    "beginner": "Starting from the roots — a solid foundation will take you far!",
+    "preIntermediate": "You have a good foundation — keep growing!",
+    "intermediate": "Amazing! You've mastered many important vocabulary words!",
+    "upperIntermediate": "Impressive! Your vocabulary is very rich — keep challenging yourself!"
+  },
+  "components": {
+    "undoSnackbar": {
+      "defaultMessage": "Swiped",
+      "actionLabel": "Undo"
+    }
+  },
+  "accessibility": {
+    "swipeRight": "Swipe right if you know this word",
+    "swipeLeft": "Swipe left if you don't know",
+    "undoAction": "Undo swipe action",
+    "tutorialCard": "Swipe tutorial card — swipe left or right to practice",
+    "lotusAnimation": "Lotus flower — result animation",
+    "levelBadge": "Your level: {{levelLabel}}",
+    "goalCard": "Goal {{label}}: {{description}}",
+    "levelCard": "Level {{label}}: {{description}}"
+  }
+}

@@ -10,9 +10,9 @@ export type LearningGoalId =
 
 export interface LearningGoal {
   id: LearningGoalId;
-  label: string;
+  labelKey: string;
   icon: string; // Material Community Icons name
-  description: string;
+  descriptionKey: string;
 }
 
 export const UserLevel = {

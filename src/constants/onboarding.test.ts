@@ -3,10 +3,10 @@ import { UserLevel } from '@/types/onboarding';
 import {
   calculateLevelFromScore,
   DEFAULT_GOAL_ID,
+  getEncouragementKey,
   getFeatureUnlockState,
-  getLevelLabel,
+  getLevelLabelKey,
   GOAL_OPTIONS,
-  LEVEL_ENCOURAGEMENTS,
   LEVEL_INFO,
 } from './onboarding';
 
@@ -19,9 +19,9 @@ describe('onboarding constants', () => {
     it('each goal has required fields', () => {
       for (const goal of GOAL_OPTIONS) {
         expect(goal.id).toBeTruthy();
-        expect(goal.label).toBeTruthy();
+        expect(goal.labelKey).toBeTruthy();
         expect(goal.icon).toBeTruthy();
-        expect(goal.description).toBeTruthy();
+        expect(goal.descriptionKey).toBeTruthy();
       }
     });
 
@@ -69,14 +69,14 @@ describe('onboarding constants', () => {
     });
   });
 
-  describe('getLevelLabel', () => {
-    it('returns label for valid levels', () => {
-      expect(getLevelLabel(UserLevel.Beginner)).toBe('Người mới bắt đầu');
-      expect(getLevelLabel(UserLevel.UpperIntermediate)).toBe('Trên trung cấp');
+  describe('getLevelLabelKey', () => {
+    it('returns i18n key for valid levels', () => {
+      expect(getLevelLabelKey(UserLevel.Beginner)).toBe('levels.beginner.label');
+      expect(getLevelLabelKey(UserLevel.UpperIntermediate)).toBe('levels.upperIntermediate.label');
     });
 
-    it('returns fallback for invalid level', () => {
-      expect(getLevelLabel(99 as never)).toBe('Không xác định');
+    it('returns fallback key for invalid level', () => {
+      expect(getLevelLabelKey(99 as never)).toBe('levels.undefined');
     });
   });
 
@@ -103,12 +103,14 @@ describe('onboarding constants', () => {
     });
   });
 
-  describe('LEVEL_ENCOURAGEMENTS', () => {
-    it('has an encouragement for every level', () => {
-      expect(LEVEL_ENCOURAGEMENTS[UserLevel.Beginner]).toBeTruthy();
-      expect(LEVEL_ENCOURAGEMENTS[UserLevel.PreIntermediate]).toBeTruthy();
-      expect(LEVEL_ENCOURAGEMENTS[UserLevel.Intermediate]).toBeTruthy();
-      expect(LEVEL_ENCOURAGEMENTS[UserLevel.UpperIntermediate]).toBeTruthy();
+  describe('getEncouragementKey', () => {
+    it('returns i18n key for every level', () => {
+      expect(getEncouragementKey(UserLevel.Beginner)).toBe('encouragement.beginner');
+      expect(getEncouragementKey(UserLevel.PreIntermediate)).toBe('encouragement.preIntermediate');
+      expect(getEncouragementKey(UserLevel.Intermediate)).toBe('encouragement.intermediate');
+      expect(getEncouragementKey(UserLevel.UpperIntermediate)).toBe(
+        'encouragement.upperIntermediate'
+      );
     });
   });
 });

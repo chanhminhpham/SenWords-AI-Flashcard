@@ -19,6 +19,22 @@ module.exports = defineConfig([
       'react/display-name': 'off',
     },
   },
+  // Test files & test-utils — allow jest globals
+  {
+    files: ['**/__tests__/**', '**/*.test.{ts,tsx}', 'src/__test-utils__/**'],
+    languageOptions: {
+      globals: {
+        jest: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
+    },
+  },
   // Enforce @/ alias in src/ — prevent relative imports
   {
     files: ['src/**/*.{ts,tsx}'],

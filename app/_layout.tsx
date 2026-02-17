@@ -16,9 +16,11 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import type { Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { I18nextProvider } from 'react-i18next';
 import { PaperProvider } from 'react-native-paper';
 
 import { ENV, validateEnv } from '@/config/env';
+import { initI18n } from '@/i18n';
 import { useDeviceTier } from '@/hooks/use-device-tier';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
@@ -34,7 +36,10 @@ Sentry.init({
 // (2) Validate env (sync, module scope)
 validateEnv();
 
-// (3) Prevent splash screen auto-hide until fonts + auth are ready
+// (3) Initialize i18n (sync, module scope)
+const i18nInstance = initI18n();
+
+// (4) Prevent splash screen auto-hide until fonts + auth are ready
 SplashScreen.preventAutoHideAsync();
 
 // Expo Router requires default export for route files
@@ -105,10 +110,12 @@ function RootLayout() {
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <Stack screenOptions={{ headerShown: false }} />
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-    </PaperProvider>
+    <I18nextProvider i18n={i18nInstance}>
+      <PaperProvider theme={theme}>
+        <Stack screenOptions={{ headerShown: false }} />
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      </PaperProvider>
+    </I18nextProvider>
   );
 }
 

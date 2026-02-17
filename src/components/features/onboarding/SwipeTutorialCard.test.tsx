@@ -29,14 +29,14 @@ describe('SwipeTutorialCard', () => {
     expect(getByTestId('swipe-tutorial-card')).toBeTruthy();
   });
 
-  it('shows instruction text in Vietnamese', () => {
+  it('shows instruction text', () => {
     const { getByText } = render(<SwipeTutorialCard onComplete={mockOnComplete} />);
-    expect(getByText('Vuốt phải nếu bạn BIẾT từ này, vuốt trái nếu CHƯA BIẾT')).toBeTruthy();
+    expect(getByText('placementTest.tutorial.instruction')).toBeTruthy();
   });
 
   it('shows practice hint', () => {
     const { getByText } = render(<SwipeTutorialCard onComplete={mockOnComplete} />);
-    expect(getByText('Hãy thử vuốt thẻ này!')).toBeTruthy();
+    expect(getByText('placementTest.tutorial.hint')).toBeTruthy();
   });
 
   it('renders hand icon', () => {

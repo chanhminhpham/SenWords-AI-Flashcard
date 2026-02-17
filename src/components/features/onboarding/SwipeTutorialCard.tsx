@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native-paper';
 import Animated, {
   Easing,
@@ -30,6 +31,7 @@ export function SwipeTutorialCard({ onComplete }: SwipeTutorialCardProps) {
   const [practiced, setPracticed] = useState(false);
   const reduceMotion = useAppStore((s) => s.shouldReduceMotion());
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   // Animate hand icon hint (left-right sway)
   useEffect(() => {
@@ -79,6 +81,9 @@ export function SwipeTutorialCard({ onComplete }: SwipeTutorialCardProps) {
     <GestureDetector gesture={pan}>
       <Animated.View
         testID="swipe-tutorial-card"
+        accessible={true}
+        accessibilityLabel={t('accessibility.tutorialCard')}
+        accessibilityRole="button"
         style={[
           styles.card,
           {
@@ -94,10 +99,10 @@ export function SwipeTutorialCard({ onComplete }: SwipeTutorialCardProps) {
             </Text>
           </Animated.View>
           <Text style={[styles.instruction, { color: theme.colors.onSurface }]}>
-            Vuốt phải nếu bạn BIẾT từ này, vuốt trái nếu CHƯA BIẾT
+            {t('placementTest.tutorial.instruction')}
           </Text>
           <Text style={[styles.hint, { color: theme.colors.onSurfaceVariant }]}>
-            Hãy thử vuốt thẻ này!
+            {t('placementTest.tutorial.hint')}
           </Text>
         </View>
       </Animated.View>

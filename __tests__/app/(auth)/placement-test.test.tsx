@@ -46,9 +46,9 @@ describe('PlacementTestScreen', () => {
     expect(screen.getByTestId('swipe-tutorial-card')).toBeTruthy();
   });
 
-  it('shows "Hướng dẫn" as progress during tutorial', () => {
+  it('shows tutorial label as progress during tutorial', () => {
     render(<PlacementTestScreen />);
-    expect(screen.getByText('Hướng dẫn')).toBeTruthy();
+    expect(screen.getByText('placementTest.tutorialLabel')).toBeTruthy();
   });
 
   it('shows placement card after completing tutorial', () => {
@@ -121,7 +121,7 @@ describe('PlacementTestScreen', () => {
   it('shows swipe direction hints after tutorial', () => {
     render(<PlacementTestScreen />);
     fireEvent.press(screen.getByTestId('complete-tutorial'));
-    expect(screen.getByText('← Chưa biết')).toBeTruthy();
-    expect(screen.getByText('Biết →')).toBeTruthy();
+    expect(screen.getByText('placementTest.hintLeft')).toBeTruthy();
+    expect(screen.getByText('placementTest.hintRight')).toBeTruthy();
   });
 });

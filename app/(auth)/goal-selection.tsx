@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, Icon, RadioButton, Text } from 'react-native-paper';
 
 import { DEFAULT_GOAL_ID, GOAL_OPTIONS, LEVEL_INFO } from '@/constants/onboarding';
@@ -15,6 +16,7 @@ export default function GoalSelectionScreen() {
   const [showLevelPicker, setShowLevelPicker] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<UserLevelValue | null>(null);
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   const selectGoal = useOnboardingStore((s) => s.selectGoal);
   const selectLevelManually = useOnboardingStore((s) => s.selectLevelManually);
@@ -47,7 +49,7 @@ export default function GoalSelectionScreen() {
       <View className="flex-1 bg-app-bg dark:bg-app-bg-dark" testID="level-picker-screen">
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
-            Chọn trình độ của bạn
+            {t('goalSelection.levelPicker.title')}
           </Text>
 
           {LEVEL_INFO.map((level) => (
@@ -55,6 +57,13 @@ export default function GoalSelectionScreen() {
               key={level.index}
               testID={`level-card-${level.index}`}
               onPress={() => setSelectedLevel(level.index)}
+              accessible={true}
+              accessibilityRole="radio"
+              accessibilityLabel={t('accessibility.levelCard', {
+                label: t(level.labelKey),
+                description: t(level.descriptionKey),
+              })}
+              accessibilityState={{ selected: selectedLevel === level.index }}
               style={[
                 styles.card,
                 selectedLevel === level.index && {
@@ -67,9 +76,9 @@ export default function GoalSelectionScreen() {
                   status={selectedLevel === level.index ? 'checked' : 'unchecked'}
                 />
                 <View style={styles.cardText}>
-                  <Text variant="titleMedium">{level.label}</Text>
+                  <Text variant="titleMedium">{t(level.labelKey)}</Text>
                   <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                    {level.description}
+                    {t(level.descriptionKey)}
                   </Text>
                 </View>
               </Card.Content>
@@ -82,14 +91,14 @@ export default function GoalSelectionScreen() {
             disabled={selectedLevel === null}
             style={styles.continueButton}
             testID="confirm-level-button">
-            Xác nhận
+            {t('goalSelection.levelPicker.confirmButton')}
           </Button>
 
           <Button
             mode="text"
             onPress={() => setShowLevelPicker(false)}
             testID="back-to-goals-button">
-            Quay lại chọn mục tiêu
+            {t('goalSelection.levelPicker.backButton')}
           </Button>
         </ScrollView>
       </View>
@@ -100,7 +109,7 @@ export default function GoalSelectionScreen() {
     <View className="flex-1 bg-app-bg dark:bg-app-bg-dark" testID="goal-selection-screen">
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
-          Bạn muốn học tiếng Anh để làm gì?
+          {t('goalSelection.title')}
         </Text>
 
         {GOAL_OPTIONS.map((goal) => (
@@ -108,6 +117,13 @@ export default function GoalSelectionScreen() {
             key={goal.id}
             testID={`goal-card-${goal.id}`}
             onPress={() => setSelectedGoal(goal.id)}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={t('accessibility.goalCard', {
+              label: t(goal.labelKey),
+              description: t(goal.descriptionKey),
+            })}
+            accessibilityState={{ selected: selectedGoal === goal.id }}
             style={[
               styles.card,
               selectedGoal === goal.id && {
@@ -117,9 +133,9 @@ export default function GoalSelectionScreen() {
             <Card.Content style={styles.cardContent}>
               <Icon source={goal.icon} size={28} color={theme.colors.onSurfaceVariant} />
               <View style={styles.cardText}>
-                <Text variant="titleMedium">{goal.label}</Text>
+                <Text variant="titleMedium">{t(goal.labelKey)}</Text>
                 <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                  {goal.description}
+                  {t(goal.descriptionKey)}
                 </Text>
               </View>
             </Card.Content>
@@ -132,15 +148,15 @@ export default function GoalSelectionScreen() {
           disabled={!selectedGoal}
           style={styles.continueButton}
           testID="continue-button">
-          Tiếp tục
+          {t('goalSelection.continueButton')}
         </Button>
 
         <Button mode="text" onPress={handleSkip} testID="skip-button">
-          Bỏ qua — bắt đầu với Giao tiếp cơ bản
+          {t('goalSelection.skipButton')}
         </Button>
 
         <Button mode="text" onPress={handleManualLevelSelect} testID="manual-level-button">
-          Tôi muốn tự chọn trình độ
+          {t('goalSelection.manualLevelButton')}
         </Button>
       </ScrollView>
     </View>

@@ -12,6 +12,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import { useTranslation } from 'react-i18next';
+
 import { useAppStore } from '@/stores/app.store';
 import { useAppTheme } from '@/theme/use-app-theme';
 import type { PlacementWord, SwipeResponse } from '@/types/onboarding';
@@ -28,6 +30,7 @@ export function PlacementSwipeCard({ word, onSwipe }: PlacementSwipeCardProps) {
   const translateX = useSharedValue(0);
   const reduceMotion = useAppStore((s) => s.shouldReduceMotion());
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   const handleSwipeComplete = useCallback(
     (direction: SwipeResponse) => {
@@ -81,6 +84,9 @@ export function PlacementSwipeCard({ word, onSwipe }: PlacementSwipeCardProps) {
     <GestureDetector gesture={pan}>
       <Animated.View
         testID="placement-swipe-card"
+        accessible={true}
+        accessibilityLabel={`${word.word} — ${word.translation}`}
+        accessibilityHint={t('accessibility.swipeRight')}
         style={[styles.card, { backgroundColor: theme.colors.background }, animatedStyle]}>
         {/* Know overlay (green) */}
         <Animated.View

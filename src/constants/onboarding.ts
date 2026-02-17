@@ -8,39 +8,39 @@ import { UserLevel } from '@/types/onboarding';
 export const GOAL_OPTIONS: readonly LearningGoal[] = [
   {
     id: 'ielts',
-    label: 'IELTS',
+    labelKey: 'goals.ielts.label',
     icon: 'target',
-    description: 'Chuẩn bị kỳ thi',
+    descriptionKey: 'goals.ielts.description',
   },
   {
     id: 'business',
-    label: 'Business',
+    labelKey: 'goals.business.label',
     icon: 'briefcase-outline',
-    description: 'Tiếng Anh công sở',
+    descriptionKey: 'goals.business.description',
   },
   {
     id: 'travel',
-    label: 'Du lịch',
+    labelKey: 'goals.travel.label',
     icon: 'airplane',
-    description: 'Giao tiếp khi du lịch',
+    descriptionKey: 'goals.travel.description',
   },
   {
     id: 'reading',
-    label: 'Đọc sách',
+    labelKey: 'goals.reading.label',
     icon: 'book-open-variant',
-    description: 'Đọc sách tiếng Anh',
+    descriptionKey: 'goals.reading.description',
   },
   {
     id: 'movies',
-    label: 'Xem phim',
+    labelKey: 'goals.movies.label',
     icon: 'movie-open-outline',
-    description: 'Xem phim không phụ đề',
+    descriptionKey: 'goals.movies.description',
   },
   {
     id: 'conversation',
-    label: 'Giao tiếp chung',
+    labelKey: 'goals.conversation.label',
     icon: 'chat-outline',
-    description: 'Nói tiếng Anh hàng ngày',
+    descriptionKey: 'goals.conversation.description',
   },
 ] as const;
 
@@ -59,39 +59,39 @@ export function calculateLevelFromScore(correctCount: number): UserLevelValue {
   return UserLevel.UpperIntermediate;
 }
 
-// ─── Level Labels (Vietnamese) ─────────────────────────────────
+// ─── Level Labels (i18n keys) ─────────────────────────────────
 
 export interface LevelInfo {
   index: UserLevelValue;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
 }
 
 export const LEVEL_INFO: readonly LevelInfo[] = [
   {
     index: UserLevel.Beginner,
-    label: 'Người mới bắt đầu',
-    description: 'Mới bắt đầu học tiếng Anh',
+    labelKey: 'levels.beginner.label',
+    descriptionKey: 'levels.beginner.description',
   },
   {
     index: UserLevel.PreIntermediate,
-    label: 'Trước trung cấp',
-    description: 'Hiểu được những điều cơ bản',
+    labelKey: 'levels.preIntermediate.label',
+    descriptionKey: 'levels.preIntermediate.description',
   },
   {
     index: UserLevel.Intermediate,
-    label: 'Trung cấp',
-    description: 'Có thể giao tiếp trong nhiều tình huống',
+    labelKey: 'levels.intermediate.label',
+    descriptionKey: 'levels.intermediate.description',
   },
   {
     index: UserLevel.UpperIntermediate,
-    label: 'Trên trung cấp',
-    description: 'Hiểu hầu hết nội dung tiếng Anh',
+    labelKey: 'levels.upperIntermediate.label',
+    descriptionKey: 'levels.upperIntermediate.description',
   },
 ] as const;
 
-export function getLevelLabel(level: UserLevelValue): string {
-  return LEVEL_INFO[level]?.label ?? 'Không xác định';
+export function getLevelLabelKey(level: UserLevelValue): string {
+  return LEVEL_INFO[level]?.labelKey ?? 'levels.undefined';
 }
 
 // ─── Feature Unlock Map ────────────────────────────────────────
@@ -104,11 +104,15 @@ export function getFeatureUnlockState(level: UserLevelValue): FeatureUnlockState
   };
 }
 
-// ─── Encouraging Messages (Vietnamese) ─────────────────────────
+// ─── Encouraging Messages (i18n keys) ─────────────────────────
 
-export const LEVEL_ENCOURAGEMENTS: Record<UserLevelValue, string> = {
-  [UserLevel.Beginner]: 'Bắt đầu từ gốc rễ — nền tảng vững chắc sẽ giúp bạn tiến xa!',
-  [UserLevel.PreIntermediate]: 'Bạn đã có nền tảng tốt — hãy tiếp tục phát triển!',
-  [UserLevel.Intermediate]: 'Tuyệt vời! Bạn đã nắm được nhiều từ vựng quan trọng!',
-  [UserLevel.UpperIntermediate]: 'Ấn tượng! Vốn từ của bạn rất phong phú — hãy thử thách thêm!',
+const LEVEL_KEY_MAP: Record<UserLevelValue, string> = {
+  [UserLevel.Beginner]: 'beginner',
+  [UserLevel.PreIntermediate]: 'preIntermediate',
+  [UserLevel.Intermediate]: 'intermediate',
+  [UserLevel.UpperIntermediate]: 'upperIntermediate',
 };
+
+export function getEncouragementKey(level: UserLevelValue): string {
+  return `encouragement.${LEVEL_KEY_MAP[level]}`;
+}

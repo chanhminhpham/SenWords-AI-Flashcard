@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Button, Text, TextInput } from 'react-native-paper';
 
 import { useAuthStore } from '@/stores/auth.store';
@@ -32,6 +33,7 @@ export default function AgeVerificationScreen() {
   const [year, setYear] = useState('');
   const [rejected, setRejected] = useState(false);
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   const setAgeVerified = useAuthStore((s) => s.setAgeVerified);
 
@@ -44,7 +46,7 @@ export default function AgeVerificationScreen() {
     const y = parseInt(year, 10);
 
     if (!d || !m || !y || !isValidDate(y, m, d)) {
-      setError('Vui lòng nhập ngày sinh hợp lệ');
+      setError(t('ageVerification.errorMessage'));
       return;
     }
 
@@ -70,7 +72,7 @@ export default function AgeVerificationScreen() {
             variant="titleLarge"
             style={{ textAlign: 'center', lineHeight: 32 }}
             testID="under-13-message">
-            Ứng dụng dành cho người từ 13 tuổi trở lên
+            {t('ageVerification.rejectedMessage')}
           </Text>
         </View>
       </View>
@@ -82,11 +84,11 @@ export default function AgeVerificationScreen() {
       <View className="flex-1 justify-center">
         <View className="mb-xl">
           <Text variant="headlineMedium" style={{ textAlign: 'center' }}>
-            Xác minh tuổi
+            {t('ageVerification.title')}
           </Text>
           <View className="mt-sm">
             <Text variant="bodyLarge" style={{ textAlign: 'center', color: '#4A4E54' }}>
-              Ngày sinh của bạn
+              {t('ageVerification.subtitle')}
             </Text>
           </View>
         </View>
@@ -96,9 +98,9 @@ export default function AgeVerificationScreen() {
           <View className="w-20">
             <TextInput
               mode="outlined"
-              label="Ngày"
+              label={t('ageVerification.dayLabel')}
               value={day}
-              onChangeText={(t) => setDay(t.replace(/\D/g, '').slice(0, 2))}
+              onChangeText={(text) => setDay(text.replace(/\D/g, '').slice(0, 2))}
               keyboardType="number-pad"
               maxLength={2}
               testID="day-input"
@@ -107,9 +109,9 @@ export default function AgeVerificationScreen() {
           <View className="w-20">
             <TextInput
               mode="outlined"
-              label="Tháng"
+              label={t('ageVerification.monthLabel')}
               value={month}
-              onChangeText={(t) => setMonth(t.replace(/\D/g, '').slice(0, 2))}
+              onChangeText={(text) => setMonth(text.replace(/\D/g, '').slice(0, 2))}
               keyboardType="number-pad"
               maxLength={2}
               testID="month-input"
@@ -118,9 +120,9 @@ export default function AgeVerificationScreen() {
           <View className="w-28">
             <TextInput
               mode="outlined"
-              label="Năm"
+              label={t('ageVerification.yearLabel')}
               value={year}
-              onChangeText={(t) => setYear(t.replace(/\D/g, '').slice(0, 4))}
+              onChangeText={(text) => setYear(text.replace(/\D/g, '').slice(0, 4))}
               keyboardType="number-pad"
               maxLength={4}
               testID="year-input"
@@ -146,7 +148,7 @@ export default function AgeVerificationScreen() {
             contentStyle={{ paddingVertical: 8 }}
             style={{ borderRadius: 12 }}
             testID="verify-button">
-            Tiếp tục
+            {t('ageVerification.verifyButton')}
           </Button>
         </View>
       </View>

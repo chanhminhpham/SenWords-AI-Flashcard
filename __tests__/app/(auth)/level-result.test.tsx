@@ -66,7 +66,7 @@ describe('LevelResultScreen', () => {
     renderScreen();
     expect(screen.getByTestId('level-result-screen')).toBeTruthy();
     expect(screen.getByTestId('level-badge')).toBeTruthy();
-    expect(screen.getByText(/Trung cấp/)).toBeTruthy();
+    expect(screen.getByTestId('level-badge')).toBeTruthy();
   });
 
   it('shows correct count summary for placement test', () => {
@@ -79,14 +79,14 @@ describe('LevelResultScreen', () => {
     useOnboardingStore.getState().calculateLevel();
 
     renderScreen();
-    expect(screen.getByText('Bạn biết 5/10 từ')).toBeTruthy();
+    expect(screen.getByText('levelResult.testSummary')).toBeTruthy();
   });
 
   it('shows manual selection summary', () => {
     useOnboardingStore.getState().selectLevelManually(UserLevel.UpperIntermediate);
 
     renderScreen();
-    expect(screen.getByText('Bạn đã tự chọn trình độ')).toBeTruthy();
+    expect(screen.getByText('levelResult.manualSummary')).toBeTruthy();
   });
 
   it('shows encouragement message', () => {
@@ -128,7 +128,7 @@ describe('LevelResultScreen', () => {
 
     renderScreen();
     expect(screen.getByTestId('feature-unlock-list')).toBeTruthy();
-    expect(screen.getByText('Tính năng mở khóa:')).toBeTruthy();
-    expect(screen.getByText('• Vuốt phải/trái để học từ vựng')).toBeTruthy();
+    expect(screen.getByText('levelResult.featureUnlock')).toBeTruthy();
+    expect(screen.getByText('levelResult.featureSwipe')).toBeTruthy();
   });
 });

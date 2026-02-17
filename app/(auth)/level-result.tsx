@@ -4,10 +4,15 @@ import { StyleSheet, View } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { getLevelLabel, getFeatureUnlockState, LEVEL_ENCOURAGEMENTS } from '@/constants/onboarding';
+import {
+  getLevelLabelKey,
+  getFeatureUnlockState,
+  getEncouragementKey,
+} from '@/constants/onboarding';
 import { saveOnboardingResult } from '@/services/onboarding/onboarding.service';
 import { useAppStore } from '@/stores/app.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -17,6 +22,7 @@ import { useAppTheme } from '@/theme/use-app-theme';
 export default function LevelResultScreen() {
   const [saving, setSaving] = useState(false);
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   const determinedLevel = useOnboardingStore((s) => s.determinedLevel);
   const selectedGoal = useOnboardingStore((s) => s.selectedGoal);
@@ -83,15 +89,17 @@ export default function LevelResultScreen() {
     );
   }
 
-  const levelLabel = getLevelLabel(determinedLevel);
-  const encouragement = LEVEL_ENCOURAGEMENTS[determinedLevel];
+  const levelLabel = t(getLevelLabelKey(determinedLevel));
   const featureUnlock = getFeatureUnlockState(determinedLevel);
 
   return (
     <View className="flex-1 bg-app-bg dark:bg-app-bg-dark" testID="level-result-screen">
       <View style={styles.content}>
         {/* Lotus bloom animation */}
-        <Animated.View testID="lotus-animation" style={[styles.lotusContainer, animatedStyle]}>
+        <Animated.View
+          testID="lotus-animation"
+          accessibilityLabel={t('accessibility.lotusAnimation')}
+          style={[styles.lotusContainer, animatedStyle]}>
           <Text style={styles.lotusEmoji}>🪷</Text>
         </Animated.View>
 
@@ -99,8 +107,10 @@ export default function LevelResultScreen() {
         <Text
           variant="headlineSmall"
           style={[styles.levelText, { color: theme.colors.onSurface }]}
-          testID="level-badge">
-          Bạn đang ở: {levelLabel}
+          testID="level-badge"
+          accessibilityRole="header"
+          accessibilityLabel={t('accessibility.levelBadge', { levelLabel })}>
+          {t('levelResult.levelBadge', { levelLabel })}
         </Text>
 
         {/* Summary */}
@@ -108,7 +118,9 @@ export default function LevelResultScreen() {
           variant="bodyLarge"
           style={[styles.summary, { color: theme.colors.onSurfaceVariant }]}
           testID="result-summary">
-          {manualLevelSelected ? 'Bạn đã tự chọn trình độ' : `Bạn biết ${correctCount}/10 từ`}
+          {manualLevelSelected
+            ? t('levelResult.manualSummary')
+            : t('levelResult.testSummary', { correctCount })}
         </Text>
 
         {/* Encouragement */}
@@ -116,7 +128,7 @@ export default function LevelResultScreen() {
           variant="bodyMedium"
           style={[styles.encouragement, { color: theme.colors.nature.accent }]}
           testID="encouragement">
-          {encouragement}
+          {t(getEncouragementKey(determinedLevel))}
         </Text>
 
         {/* Feature unlock summary */}
@@ -124,19 +136,19 @@ export default function LevelResultScreen() {
           <Text
             variant="bodySmall"
             style={[styles.featureHeader, { color: theme.colors.onSurfaceVariant }]}>
-            Tính năng mở khóa:
+            {t('levelResult.featureUnlock')}
           </Text>
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            • Vuốt phải/trái để học từ vựng
+            {t('levelResult.featureSwipe')}
           </Text>
           {featureUnlock.swipeUpEnabled && (
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-              • Vuốt lên để khám phá thêm
+              {t('levelResult.featureSwipeUp')}
             </Text>
           )}
           {featureUnlock.largerFonts && (
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-              • Chữ lớn hơn, giao diện đơn giản
+              {t('levelResult.featureLargerFonts')}
             </Text>
           )}
         </View>
@@ -150,7 +162,7 @@ export default function LevelResultScreen() {
           style={styles.startButton}
           contentStyle={styles.startButtonContent}
           testID="start-button">
-          Bắt đầu học
+          {t('levelResult.startButton')}
         </Button>
       </View>
     </View>

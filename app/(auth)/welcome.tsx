@@ -2,9 +2,12 @@ import { View } from 'react-native';
 
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Button, Text } from 'react-native-paper';
 
 export default function WelcomeScreen() {
+  const { t } = useTranslation();
+
   return (
     <View className="flex-1 bg-nature-tint">
       <View className="flex-1 items-center justify-center px-xl">
@@ -17,7 +20,7 @@ export default function WelcomeScreen() {
             <Text
               variant="titleMedium"
               style={{ textAlign: 'center', color: '#4A4E54', lineHeight: 28 }}>
-              Từ vựng nở từ gốc
+              {t('welcome.tagline')}
             </Text>
           </View>
         </View>
@@ -29,7 +32,7 @@ export default function WelcomeScreen() {
             onPress={() => router.push('/(auth)/age-verification' as Href)}
             contentStyle={{ paddingVertical: 8 }}
             style={{ borderRadius: 12 }}>
-            Bắt đầu
+            {t('welcome.startButton')}
           </Button>
         </View>
       </View>

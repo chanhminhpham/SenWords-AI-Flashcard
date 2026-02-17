@@ -33,7 +33,7 @@ describe('UndoSnackbar', () => {
     const { getByText } = render(
       <UndoSnackbar visible={true} onDismiss={mockOnDismiss} onUndo={mockOnUndo} />
     );
-    expect(getByText('Đã vuốt')).toBeTruthy();
+    expect(getByText('components.undoSnackbar.defaultMessage')).toBeTruthy();
   });
 
   it('shows custom message', () => {
@@ -51,10 +51,10 @@ describe('UndoSnackbar', () => {
     expect(mockOnUndo).toHaveBeenCalledTimes(1);
   });
 
-  it('shows Vietnamese undo label', () => {
+  it('shows undo action label', () => {
     const { getByText } = render(
       <UndoSnackbar visible={true} onDismiss={mockOnDismiss} onUndo={mockOnUndo} />
     );
-    expect(getByText('Hoàn tác')).toBeTruthy();
+    expect(getByText('components.undoSnackbar.actionLabel')).toBeTruthy();
   });
 });
