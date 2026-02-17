@@ -67,6 +67,7 @@ if (typeof crypto !== 'undefined' && !crypto.subtle) {
   });
 }
 
+/* eslint-disable import/first -- Polyfills must execute before other imports */
 import '../global.css';
 
 import { useEffect } from 'react';

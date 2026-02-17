@@ -66,9 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // If user has existing session, check their onboarding status from server
       if (session?.user) {
-        const { hasCompletedOnboarding } = await import(
-          '@/services/onboarding/onboarding.service'
-        );
+        const { hasCompletedOnboarding } = await import('@/services/onboarding/onboarding.service');
         const { useOnboardingStore } = await import('@/stores/onboarding.store');
         const completed = await hasCompletedOnboarding(session.user.id);
         if (completed) {
