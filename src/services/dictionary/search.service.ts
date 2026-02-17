@@ -1,6 +1,5 @@
 import { like, eq } from 'drizzle-orm';
 import { getDb, vocabularyCards } from '@/db';
-import type { VocabularyCard } from '@/types/vocabulary';
 
 export interface SearchResult {
   word: string;
@@ -23,7 +22,7 @@ export function searchDictionary(query: string, limit = 20): SearchResult[] {
   const db = getDb();
   const normalizedQuery = query.trim().toLowerCase();
 
-  const results = db
+  return db
     .select({
       word: vocabularyCards.word,
       definition: vocabularyCards.definition,
@@ -35,8 +34,6 @@ export function searchDictionary(query: string, limit = 20): SearchResult[] {
     .where(like(vocabularyCards.word, `${normalizedQuery}%`))
     .limit(limit)
     .all();
-
-  return results;
 }
 
 /**
@@ -66,26 +63,27 @@ export function searchDictionaryBroad(query: string, limit = 20): SearchResult[]
 
 /**
  * Get a single vocabulary card by exact word match.
+ * Returns the Drizzle-inferred row type from vocabulary_cards.
  */
-export function getWordByExactMatch(word: string): VocabularyCard | undefined {
+export function getWordByExactMatch(word: string) {
   const db = getDb();
   return db
     .select()
     .from(vocabularyCards)
     .where(eq(vocabularyCards.word, word.toLowerCase().trim()))
     .limit(1)
-    .all()[0] as VocabularyCard | undefined;
+    .all()[0];
 }
 
 /**
  * Get vocabulary cards filtered by difficulty level.
  */
-export function getWordsByDifficulty(level: number, limit = 50): VocabularyCard[] {
+export function getWordsByDifficulty(level: number, limit = 50) {
   const db = getDb();
   return db
     .select()
     .from(vocabularyCards)
     .where(eq(vocabularyCards.difficultyLevel, level))
     .limit(limit)
-    .all() as VocabularyCard[];
+    .all();
 }

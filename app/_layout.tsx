@@ -22,6 +22,7 @@ import { PaperProvider } from 'react-native-paper';
 import { ENV, validateEnv } from '@/config/env';
 import { useDatabase } from '@/db/use-database';
 import { useDeviceTier } from '@/hooks/use-device-tier';
+import { loadDictionary } from '@/services/dictionary/dictionary.service';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { senWordDarkTheme } from '@/theme/dark-theme';
@@ -76,6 +77,15 @@ function RootLayout() {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  // Load dictionary into SQLite after DB migrations complete
+  useEffect(() => {
+    if (dbReady) {
+      loadDictionary().catch((err) =>
+        Sentry.captureException(err, { tags: { module: 'dictionary-loading' } })
+      );
+    }
+  }, [dbReady]);
 
   // Hide splash when fonts + auth + DB are ready
   useEffect(() => {

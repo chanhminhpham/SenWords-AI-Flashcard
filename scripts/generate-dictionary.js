@@ -32,14 +32,80 @@ const TAG_MAP = {
   H: 'Health',
 };
 
+// Example sentence templates by POS — rotate based on word hash
+const EXAMPLE_TEMPLATES = {
+  noun: [
+    'The {w} is very important.',
+    'I need a {w} for this.',
+    'She bought a new {w}.',
+    'The {w} was on the table.',
+    'We talked about the {w}.',
+  ],
+  verb: [
+    'I {w} every day.',
+    'She likes to {w}.',
+    'Please {w} carefully.',
+    'They {w} together often.',
+    'We need to {w} this.',
+  ],
+  adjective: [
+    'The weather is very {w} today.',
+    'This food tastes {w}.',
+    'She seems very {w}.',
+    'The room looks {w}.',
+    'It was a {w} experience.',
+  ],
+  adverb: [
+    'She spoke {w}.',
+    'He {w} agreed with the plan.',
+    'They finished the work {w}.',
+    'The car moved {w}.',
+    'I {w} understand your point.',
+  ],
+  preposition: [
+    'The book is {w} the table.',
+    'She walked {w} the park.',
+    'We met {w} the morning.',
+    'He stood {w} the door.',
+  ],
+  conjunction: [
+    'I like tea {w} coffee.',
+    'She is smart {w} hardworking.',
+    'He tried {w} he could not do it.',
+  ],
+  pronoun: ['{W} can help with this task.', 'Is {w} the right answer?', '{W} should try harder.'],
+  determiner: [
+    '{W} student passed the exam.',
+    'I saw {w} birds in the park.',
+    '{W} day is a good day to learn.',
+  ],
+  interjection: ['{W}! That was unexpected.', '{W}! How are you doing?'],
+};
+
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function generateExample(word, pos) {
+  const templates = EXAMPLE_TEMPLATES[pos] || ['This is a sentence with {w}.'];
+  const idx = simpleHash(word) % templates.length;
+  const W = word.charAt(0).toUpperCase() + word.slice(1);
+  return templates[idx].replace(/\{w\}/g, word).replace(/\{W\}/g, W);
+}
+
 function parse(line, level) {
   const [word, definition, pos, tags] = line.split('|');
+  const fullPos = POS_MAP[pos.trim()] || pos.trim();
   return {
     word: word.trim(),
     definition: definition.trim(),
-    partOfSpeech: POS_MAP[pos.trim()] || pos.trim(),
-    ipa: '',
-    exampleSentence: '',
+    partOfSpeech: fullPos,
+    ipa: null,
+    exampleSentence: generateExample(word.trim(), fullPos),
     difficultyLevel: level,
     topicTags: tags
       .trim()

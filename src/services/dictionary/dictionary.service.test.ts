@@ -3,8 +3,9 @@ import {
   isDictionaryLoaded,
   getDictionaryCount,
 } from '@/services/dictionary/dictionary.service';
+import { runInTransaction } from '@/db';
 
-// Chainable mock that supports: db.select({}).from(t).limit(n).all()
+// Chainable mock that supports: db.select({}).from(t).all()
 // and db.insert(t).values([]).run()
 const mockAllFn = jest.fn();
 const mockRunFn = jest.fn();
@@ -23,6 +24,7 @@ jest.mock('@/db', () => ({
     insert: jest.fn().mockReturnValue(chainable),
   }),
   vocabularyCards: { id: 'id' },
+  runInTransaction: jest.fn((fn: () => void) => fn()),
 }));
 
 // Mock the dictionary JSON asset
@@ -33,8 +35,8 @@ jest.mock(
       word: 'hello',
       definition: 'xin chào',
       partOfSpeech: 'interjection',
-      ipa: '/həˈloʊ/',
-      exampleSentence: 'Hello, how are you?',
+      ipa: null,
+      exampleSentence: 'Hello! That was unexpected.',
       difficultyLevel: 0,
       topicTags: ['General'],
     },
@@ -42,8 +44,8 @@ jest.mock(
       word: 'book',
       definition: 'cuốn sách',
       partOfSpeech: 'noun',
-      ipa: '/bʊk/',
-      exampleSentence: 'I read a book every week.',
+      ipa: null,
+      exampleSentence: 'I need a book for this.',
       difficultyLevel: 0,
       topicTags: ['General', 'Reading'],
     },
@@ -58,8 +60,8 @@ describe('dictionary.service', () => {
 
   describe('loadDictionary', () => {
     it('returns success with count when dictionary already loaded', async () => {
-      mockAllFn.mockReturnValueOnce([{ id: 1 }]);
-      mockAllFn.mockReturnValueOnce([{ id: 1 }, { id: 2 }, { id: 3 }]);
+      // COUNT query returns existing count
+      mockAllFn.mockReturnValueOnce([{ value: 3 }]);
 
       const result = await loadDictionary();
       expect(result.success).toBe(true);
@@ -67,12 +69,20 @@ describe('dictionary.service', () => {
     });
 
     it('inserts dictionary entries when database is empty', async () => {
-      mockAllFn.mockReturnValueOnce([]);
+      // COUNT query returns 0
+      mockAllFn.mockReturnValueOnce([{ value: 0 }]);
 
       const result = await loadDictionary();
       expect(result.success).toBe(true);
       expect(result.count).toBe(2);
       expect(mockRunFn).toHaveBeenCalled();
+    });
+
+    it('wraps inserts in a transaction', async () => {
+      mockAllFn.mockReturnValueOnce([{ value: 0 }]);
+
+      await loadDictionary();
+      expect(runInTransaction).toHaveBeenCalled();
     });
 
     it('returns error on database failure', async () => {
@@ -89,24 +99,24 @@ describe('dictionary.service', () => {
 
   describe('isDictionaryLoaded', () => {
     it('returns true when dictionary has entries', () => {
-      mockAllFn.mockReturnValueOnce([{ id: 1 }]);
+      mockAllFn.mockReturnValueOnce([{ value: 5 }]);
       expect(isDictionaryLoaded()).toBe(true);
     });
 
     it('returns false when dictionary is empty', () => {
-      mockAllFn.mockReturnValueOnce([]);
+      mockAllFn.mockReturnValueOnce([{ value: 0 }]);
       expect(isDictionaryLoaded()).toBe(false);
     });
   });
 
   describe('getDictionaryCount', () => {
     it('returns the total number of entries', () => {
-      mockAllFn.mockReturnValueOnce([{ id: 1 }, { id: 2 }, { id: 3 }]);
-      expect(getDictionaryCount()).toBe(3);
+      mockAllFn.mockReturnValueOnce([{ value: 42 }]);
+      expect(getDictionaryCount()).toBe(42);
     });
 
     it('returns 0 when empty', () => {
-      mockAllFn.mockReturnValueOnce([]);
+      mockAllFn.mockReturnValueOnce([{ value: 0 }]);
       expect(getDictionaryCount()).toBe(0);
     });
   });
