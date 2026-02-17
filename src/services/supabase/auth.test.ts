@@ -20,32 +20,30 @@ describe('Auth Service', () => {
   describe('signInWithProvider', () => {
     const ageVerification = { dateOfBirth: '2000-01-15', privacyConsent: true as const };
 
-    it('initiates OAuth flow and exchanges code for session', async () => {
+    it('initiates OAuth flow and sets session from token', async () => {
       // Mock signInWithOAuth returns URL
       (mockAuth.signInWithOAuth as jest.Mock).mockResolvedValue({
-        data: { url: 'https://auth.example.com/authorize?code_challenge=xxx', provider: 'google' },
+        data: { url: 'https://auth.example.com/authorize', provider: 'google' },
         error: null,
       });
 
-      // Mock browser returns with code
+      // Mock browser returns with token in hash
       mockWebBrowser.openAuthSessionAsync.mockResolvedValue({
         type: 'success',
-        url: 'ai-flash-card://redirect?code=test-auth-code',
+        url: 'ai-flash-card://redirect#access_token=test-token&refresh_token=refresh-token',
       } as WebBrowser.WebBrowserAuthSessionResult);
 
-      // Mock code exchange
-      (mockAuth.exchangeCodeForSession as jest.Mock).mockResolvedValue({
+      // Mock setSession
+      (mockAuth.setSession as jest.Mock).mockResolvedValue({
         data: {
-          session: { access_token: 'token' },
+          session: { access_token: 'test-token' },
           user: { id: 'user-123' },
         },
         error: null,
       });
 
-      // Mock profile upsert
-      (mockSupabase.from as jest.Mock).mockReturnValue({
-        upsert: jest.fn().mockResolvedValue({ error: null }),
-      });
+      // Mock profile RPC
+      (mockSupabase.rpc as jest.Mock).mockResolvedValue({ error: null });
 
       const result = await signInWithProvider('google', ageVerification);
 
@@ -56,7 +54,10 @@ describe('Auth Service', () => {
           skipBrowserRedirect: true,
         },
       });
-      expect(mockAuth.exchangeCodeForSession).toHaveBeenCalledWith('test-auth-code');
+      expect(mockAuth.setSession).toHaveBeenCalledWith({
+        access_token: 'test-token',
+        refresh_token: 'refresh-token',
+      });
       expect(result).toBeTruthy();
     });
 
@@ -86,7 +87,7 @@ describe('Auth Service', () => {
       });
     });
 
-    it('throws AUTH_NO_CODE when redirect has no code', async () => {
+    it('throws AUTH_NO_TOKEN when redirect has no access_token', async () => {
       (mockAuth.signInWithOAuth as jest.Mock).mockResolvedValue({
         data: { url: 'https://auth.example.com/authorize', provider: 'facebook' },
         error: null,
@@ -94,10 +95,10 @@ describe('Auth Service', () => {
 
       mockWebBrowser.openAuthSessionAsync.mockResolvedValue({
         type: 'success',
-        url: 'ai-flash-card://redirect', // No code parameter
+        url: 'ai-flash-card://redirect', // No access_token in hash
       } as WebBrowser.WebBrowserAuthSessionResult);
 
-      await expect(signInWithProvider('facebook', ageVerification)).rejects.toThrow('AUTH_NO_CODE');
+      await expect(signInWithProvider('facebook', ageVerification)).rejects.toThrow('AUTH_NO_TOKEN');
     });
 
     it('saves age verification data to profile after SSO success', async () => {
@@ -108,33 +109,27 @@ describe('Auth Service', () => {
 
       mockWebBrowser.openAuthSessionAsync.mockResolvedValue({
         type: 'success',
-        url: 'ai-flash-card://redirect?code=test-code',
+        url: 'ai-flash-card://redirect#access_token=test-token&refresh_token=refresh-token',
       } as WebBrowser.WebBrowserAuthSessionResult);
 
-      const mockUpsert = jest.fn().mockResolvedValue({ error: null });
-
-      (mockAuth.exchangeCodeForSession as jest.Mock).mockResolvedValue({
+      (mockAuth.setSession as jest.Mock).mockResolvedValue({
         data: {
-          session: { access_token: 'token' },
+          session: { access_token: 'test-token' },
           user: { id: 'user-456' },
         },
         error: null,
       });
 
-      (mockSupabase.from as jest.Mock).mockReturnValue({ upsert: mockUpsert });
+      (mockSupabase.rpc as jest.Mock).mockResolvedValue({ error: null });
 
       await signInWithProvider('apple', ageVerification);
 
-      expect(mockSupabase.from).toHaveBeenCalledWith('profiles');
-      expect(mockUpsert).toHaveBeenCalledWith(
-        {
-          id: 'user-456',
-          date_of_birth: '2000-01-15',
-          age_verified: true,
-          privacy_consent: true,
-        },
-        { onConflict: 'id' }
-      );
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_profile', {
+        user_id: 'user-456',
+        dob: '2000-01-15',
+        verified: true,
+        consent: true,
+      });
     });
   });
 

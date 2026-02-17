@@ -18,20 +18,20 @@ describe('onboarding.service', () => {
   });
 
   describe('saveOnboardingResult', () => {
-    it('updates profiles table with goal and level', async () => {
+    it('calls RPC function to update onboarding data', async () => {
       const result = await saveOnboardingResult('user-123', 'ielts', UserLevel.Intermediate);
 
       expect(result).toEqual({ success: true });
-      expect(mockSupabase.from).toHaveBeenCalledWith('profiles');
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('update_profile_onboarding', {
+        user_id: 'user-123',
+        goal: 'ielts',
+        user_level: UserLevel.Intermediate,
+      });
     });
 
-    it('returns error when Supabase update fails', async () => {
-      const mockFrom = mockSupabase.from as jest.Mock;
-      mockFrom.mockReturnValueOnce({
-        update: jest.fn().mockReturnValue({
-          eq: jest.fn().mockResolvedValue({ error: { message: 'DB error' } }),
-        }),
-      });
+    it('returns error when RPC call fails', async () => {
+      const mockRpc = mockSupabase.rpc as jest.Mock;
+      mockRpc.mockResolvedValueOnce({ error: { message: 'RPC error' }, data: null });
 
       const result = await saveOnboardingResult('user-123', 'ielts', UserLevel.Beginner);
 
@@ -44,11 +44,11 @@ describe('onboarding.service', () => {
 
     it('returns network error after exhausting retries', async () => {
       jest.useFakeTimers();
-      const mockFrom = mockSupabase.from as jest.Mock;
+      const mockRpc = mockSupabase.rpc as jest.Mock;
       const networkError = () => {
         throw new Error('Network failure');
       };
-      mockFrom
+      mockRpc
         .mockImplementationOnce(networkError)
         .mockImplementationOnce(networkError)
         .mockImplementationOnce(networkError);
@@ -69,9 +69,9 @@ describe('onboarding.service', () => {
 
     it('retries on network error and succeeds', async () => {
       jest.useFakeTimers();
-      const mockFrom = mockSupabase.from as jest.Mock;
+      const mockRpc = mockSupabase.rpc as jest.Mock;
       // First call throws, second call uses default mock (success)
-      mockFrom.mockImplementationOnce(() => {
+      mockRpc.mockImplementationOnce(() => {
         throw new Error('Network failure');
       });
 
@@ -83,7 +83,7 @@ describe('onboarding.service', () => {
       const result = await promise;
 
       expect(result).toEqual({ success: true });
-      expect(mockSupabase.from).toHaveBeenCalledTimes(2);
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(2);
     });
   });
 });

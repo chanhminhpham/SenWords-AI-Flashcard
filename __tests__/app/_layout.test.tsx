@@ -54,6 +54,10 @@ jest.mock('@tanstack/react-query', () => {
   };
 });
 
+jest.mock('react-native-gesture-handler', () =>
+  require('@/__test-utils__/gesture-handler-mock')
+);
+
 jest.mock('@/hooks/use-device-tier', () => ({
   useDeviceTier: jest.fn(),
 }));

@@ -8,4 +8,6 @@ module.exports = {
   },
   GestureDetector: ({ children }) =>
     React.createElement(View, { testID: 'gesture-detector' }, children),
+  GestureHandlerRootView: ({ children, ...props }) =>
+    React.createElement(View, { testID: 'gesture-root', ...props }, children),
 };
