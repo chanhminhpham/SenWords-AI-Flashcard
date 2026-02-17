@@ -64,6 +64,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loading: false,
       });
 
+      // If user has existing session, check their onboarding status from server
+      if (session?.user) {
+        const { hasCompletedOnboarding } = await import(
+          '@/services/onboarding/onboarding.service'
+        );
+        const { useOnboardingStore } = await import('@/stores/onboarding.store');
+        const completed = await hasCompletedOnboarding(session.user.id);
+        if (completed) {
+          useOnboardingStore.getState().completeOnboarding();
+        }
+      }
+
       // Subscribe to auth state changes — differentiate event types
       const supabase = getSupabase();
       supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
@@ -111,6 +123,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         trialMode: false,
         trialUsage: 0,
       });
+
+      // Check server for existing onboarding completion status
+      // Returning users skip onboarding, new users go through it
+      const { hasCompletedOnboarding } = await import('@/services/onboarding/onboarding.service');
+      const { useOnboardingStore } = await import('@/stores/onboarding.store');
+
+      if (result.user) {
+        const completed = await hasCompletedOnboarding(result.user.id);
+        if (completed) {
+          // Returning user — mark onboarding as complete
+          useOnboardingStore.getState().completeOnboarding();
+        } else {
+          // New user — reset onboarding state to ensure clean flow
+          useOnboardingStore.getState().resetOnboarding();
+        }
+      }
+
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'AUTH_PROVIDER_ERROR';
@@ -133,6 +162,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         trialMode: false,
         trialUsage: 0,
       });
+
+      // Reset onboarding state on sign out
+      const { useOnboardingStore } = await import('@/stores/onboarding.store');
+      useOnboardingStore.getState().resetOnboarding();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'AUTH_SIGNOUT_FAILED';
       set({ loading: false, error: message });

@@ -18,7 +18,12 @@ export default function LoginScreen() {
   const handleSSO = async (provider: SSOProvider) => {
     clearError();
 
-    if (!dateOfBirth) return;
+    if (!dateOfBirth) {
+      console.error('[AUTH] No dateOfBirth - user must complete age verification first');
+      return;
+    }
+
+    console.log('[AUTH] Starting SSO with provider:', provider);
 
     try {
       const success = await signIn(provider, {
@@ -26,10 +31,13 @@ export default function LoginScreen() {
         privacyConsent: true,
       });
 
+      console.log('[AUTH] SSO result:', success);
+
       if (success) {
         router.replace('/(auth)/goal-selection' as Href);
       }
     } catch (err) {
+      console.error('[AUTH] SSO error:', err);
       Sentry.captureException(err, { tags: { module: 'auth', provider } });
     }
   };
@@ -94,7 +102,7 @@ export default function LoginScreen() {
                   variant="bodyMedium"
                   style={{ textAlign: 'center', color: '#E57373' }}
                   testID="error-message">
-                  Không kết nối được. Thử lại nhé!
+                  Lỗi: {error}
                 </Text>
               </View>
             ) : null}

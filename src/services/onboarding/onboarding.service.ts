@@ -18,6 +18,36 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
+ * Check if user has completed onboarding by fetching their profile.
+ * Returns true if both learning_goal and level are set in the database.
+ */
+export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('learning_goal, level')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { code: 'ONBOARDING_CHECK_FAILED' },
+      });
+      return false;
+    }
+
+    // User has completed onboarding if both fields are set
+    return data?.learning_goal !== null && data?.level !== null;
+  } catch (err) {
+    Sentry.captureException(err, {
+      tags: { code: 'ONBOARDING_CHECK_ERROR' },
+    });
+    return false;
+  }
+}
+
+/**
  * Save onboarding result (goal + level) to profiles table.
  * Profile row already exists (created by auth signup trigger).
  * Retries up to MAX_RETRIES times on network errors.
@@ -32,10 +62,13 @@ export async function saveOnboardingResult(
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const supabase = getSupabase();
-      const { error } = await supabase
-        .from('profiles')
-        .update({ learning_goal: goal, level })
-        .eq('id', userId);
+
+      // Use RPC function instead of direct UPDATE to bypass RLS timing issues
+      const { error } = await supabase.rpc('update_profile_onboarding', {
+        user_id: userId,
+        goal: goal,
+        user_level: level,
+      });
 
       if (error) {
         Sentry.captureException(error, {

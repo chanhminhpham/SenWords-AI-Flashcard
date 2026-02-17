@@ -1,3 +1,72 @@
+// IMPORTANT: Polyfills MUST be imported first, before any other imports
+// These polyfill the crypto and URL APIs required by Supabase PKCE auth flow
+import { polyfillWebCrypto } from 'expo-standard-web-crypto';
+import 'react-native-url-polyfill/auto';
+
+// Initialize Web Crypto polyfill (provides crypto API for PKCE)
+polyfillWebCrypto();
+
+// HACK: Provide minimal crypto.subtle polyfill for Supabase
+// This is a workaround because expo-standard-web-crypto doesn't provide crypto.subtle
+if (typeof crypto !== 'undefined' && !crypto.subtle) {
+  Object.defineProperty(crypto, 'subtle', {
+    configurable: true,
+    enumerable: true,
+    value: {
+      // Stub implementation - Supabase implicit flow should not actually use these
+      importKey: async () => {
+        console.warn('[POLYFILL] crypto.subtle.importKey called - this is a stub');
+        return {} as CryptoKey;
+      },
+      exportKey: async () => {
+        console.warn('[POLYFILL] crypto.subtle.exportKey called - this is a stub');
+        return new ArrayBuffer(0);
+      },
+      digest: async (algorithm: string, data: ArrayBuffer) => {
+        console.warn('[POLYFILL] crypto.subtle.digest called - using stub');
+        // Very basic stub - just return some bytes
+        return new Uint8Array(32).buffer;
+      },
+      encrypt: async () => {
+        console.warn('[POLYFILL] crypto.subtle.encrypt called - this is a stub');
+        return new ArrayBuffer(0);
+      },
+      decrypt: async () => {
+        console.warn('[POLYFILL] crypto.subtle.decrypt called - this is a stub');
+        return new ArrayBuffer(0);
+      },
+      sign: async () => {
+        console.warn('[POLYFILL] crypto.subtle.sign called - this is a stub');
+        return new ArrayBuffer(0);
+      },
+      verify: async () => {
+        console.warn('[POLYFILL] crypto.subtle.verify called - this is a stub');
+        return false;
+      },
+      generateKey: async () => {
+        console.warn('[POLYFILL] crypto.subtle.generateKey called - this is a stub');
+        return {} as CryptoKey;
+      },
+      deriveKey: async () => {
+        console.warn('[POLYFILL] crypto.subtle.deriveKey called - this is a stub');
+        return {} as CryptoKey;
+      },
+      deriveBits: async () => {
+        console.warn('[POLYFILL] crypto.subtle.deriveBits called - this is a stub');
+        return new ArrayBuffer(0);
+      },
+      wrapKey: async () => {
+        console.warn('[POLYFILL] crypto.subtle.wrapKey called - this is a stub');
+        return new ArrayBuffer(0);
+      },
+      unwrapKey: async () => {
+        console.warn('[POLYFILL] crypto.subtle.unwrapKey called - this is a stub');
+        return {} as CryptoKey;
+      },
+    },
+  });
+}
+
 import '../global.css';
 
 import { useEffect } from 'react';
@@ -17,6 +86,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import type { Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { I18nextProvider } from 'react-i18next';
 import { PaperProvider } from 'react-native-paper';
 
@@ -140,14 +210,16 @@ function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nextProvider i18n={i18nInstance}>
-        <PaperProvider theme={theme}>
-          <Stack screenOptions={{ headerShown: false }} />
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        </PaperProvider>
-      </I18nextProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18nInstance}>
+          <PaperProvider theme={theme}>
+            <Stack screenOptions={{ headerShown: false }} />
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          </PaperProvider>
+        </I18nextProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
 

@@ -13,7 +13,7 @@ export function getSupabase(): SupabaseClient {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
-        flowType: 'pkce',
+        flowType: 'implicit', // Changed from 'pkce' - implicit flow doesn't need crypto.subtle
       },
     });
   }

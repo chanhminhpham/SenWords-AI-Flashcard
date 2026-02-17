@@ -20,19 +20,6 @@ function getRedirectUri(): string {
 }
 
 /**
- * Extract authorization code from redirect URL (PKCE flow).
- * Returns the code or null if not found.
- */
-function extractCode(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    return parsed.searchParams.get('code');
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Save age verification + privacy consent to the profiles table.
  * consent_timestamp is server-generated via DEFAULT NOW() — NOT sent from client.
  */
@@ -41,18 +28,14 @@ async function saveAgeVerification(
   ageVerification: AgeVerificationData
 ): Promise<void> {
   const supabase = getSupabase();
-  // Use upsert to handle race condition: the on_auth_user_created trigger
-  // auto-creates the profile row, but if it hasn't completed yet, an UPDATE
-  // would match 0 rows and silently lose data. Upsert ensures the data is saved.
-  const { error } = await supabase.from('profiles').upsert(
-    {
-      id: userId,
-      date_of_birth: ageVerification.dateOfBirth,
-      age_verified: true,
-      privacy_consent: true,
-    },
-    { onConflict: 'id' }
-  );
+
+  // Use RPC function with SECURITY DEFINER to bypass RLS timing issues
+  const { error } = await supabase.rpc('upsert_profile', {
+    user_id: userId,
+    dob: ageVerification.dateOfBirth,
+    verified: true,
+    consent: true,
+  });
 
   if (error) throw error;
 }
@@ -67,34 +50,56 @@ export async function signInWithProvider(
   ageVerification: AgeVerificationData
 ) {
   const supabase = getSupabase();
+  const redirectUri = getRedirectUri();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: getRedirectUri(),
+      redirectTo: redirectUri,
       skipBrowserRedirect: true,
     },
   });
 
-  if (error) throw error;
-  if (!data.url) throw new Error('AUTH_NO_URL');
+  if (error) {
+    console.error('[AUTH] signInWithOAuth error:', error);
+    throw error;
+  }
+  if (!data.url) {
+    console.error('[AUTH] No OAuth URL returned');
+    throw new Error('AUTH_NO_URL');
+  }
 
   // Open system browser for OAuth
-  const result = await WebBrowser.openAuthSessionAsync(data.url, getRedirectUri());
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
 
   if (result.type !== 'success') {
     // User cancelled or dismissed
     return null;
   }
 
-  // PKCE: extract code from redirect URL
-  const code = extractCode(result.url);
-  if (!code) throw new Error('AUTH_NO_CODE');
+  // Implicit flow: extract session from redirect URL hash
 
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.exchangeCodeForSession(code);
+  // With implicit flow, Supabase handles session automatically via detectSessionInUrl
+  // But since we have detectSessionInUrl: false, we need to manually parse and set session
+  const url = new URL(result.url);
+  const hashParams = new URLSearchParams(url.hash.substring(1)); // Remove # and parse
 
-  if (sessionError) throw sessionError;
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+
+  if (!accessToken) {
+    console.error('[AUTH] No access_token in redirect URL:', result.url);
+    throw new Error('AUTH_NO_TOKEN');
+  }
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken || '',
+  });
+
+  if (sessionError) {
+    throw sessionError;
+  }
 
   // Save age verification to profile after successful SSO
   if (sessionData.user) {
