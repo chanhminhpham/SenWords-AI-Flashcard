@@ -1,1 +1,54 @@
--- Base dictionary seed data (to be populated in Story 1.5)
+-- Server-side vocabulary tables seed structure (Story 1.5)
+-- Actual data sync from local SQLite is handled in the data sync story.
+-- This defines the server-side table structure for reference.
+
+-- vocabulary_cards (server-side mirror)
+-- CREATE TABLE IF NOT EXISTS vocabulary_cards (
+--   id SERIAL PRIMARY KEY,
+--   word TEXT NOT NULL,
+--   definition TEXT NOT NULL,
+--   part_of_speech TEXT NOT NULL,
+--   ipa TEXT,
+--   example_sentence TEXT,
+--   audio_url_american TEXT,
+--   audio_url_british TEXT,
+--   image_url TEXT,
+--   difficulty_level INTEGER NOT NULL DEFAULT 0,
+--   topic_tags JSONB DEFAULT '[]',
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- );
+
+-- learning_events (server-side sync target)
+-- CREATE TABLE IF NOT EXISTS learning_events (
+--   id SERIAL PRIMARY KEY,
+--   user_id TEXT NOT NULL,
+--   card_id INTEGER NOT NULL,
+--   event_type TEXT NOT NULL,
+--   payload JSONB,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- );
+
+-- sr_schedule (server-side sync target)
+-- CREATE TABLE IF NOT EXISTS sr_schedule (
+--   id SERIAL PRIMARY KEY,
+--   user_id TEXT NOT NULL,
+--   card_id INTEGER NOT NULL,
+--   interval INTEGER NOT NULL DEFAULT 0,
+--   ease_factor DOUBLE PRECISION NOT NULL DEFAULT 2.5,
+--   next_review_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+--   review_count INTEGER NOT NULL DEFAULT 0,
+--   accuracy DOUBLE PRECISION NOT NULL DEFAULT 0,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+--   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- );
+
+-- user_preferences (server-side sync target)
+-- CREATE TABLE IF NOT EXISTS user_preferences (
+--   id SERIAL PRIMARY KEY,
+--   user_id TEXT NOT NULL UNIQUE,
+--   learning_goal TEXT,
+--   level INTEGER DEFAULT 0,
+--   device_tier TEXT,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+--   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- );
