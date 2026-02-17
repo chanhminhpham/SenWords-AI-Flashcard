@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports, import/first */
 
 // Mock NativeWind CSS import (must be before _layout import)
-jest.mock('../global.css', () => ({}));
+jest.mock('../../global.css', () => ({}));
 
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
@@ -18,9 +18,15 @@ jest.mock('expo-splash-screen', () => ({
   hideAsync: jest.fn(),
 }));
 
-jest.mock('expo-router', () => ({
-  Stack: () => null,
-}));
+jest.mock('expo-router', () => {
+  const RN = require('react-native');
+  return {
+    Stack: ({ children }: { children?: unknown }) =>
+      require('react').createElement(RN.View, { testID: 'stack-navigator' }, children),
+    useRouter: () => ({ replace: jest.fn() }),
+    useSegments: () => ['(auth)'],
+  };
+});
 
 jest.mock('expo-status-bar', () => ({
   StatusBar: () => null,
@@ -33,6 +39,17 @@ jest.mock('@/config/env', () => ({
 
 jest.mock('@/hooks/use-device-tier', () => ({
   useDeviceTier: jest.fn(),
+}));
+
+jest.mock('@/stores/auth.store', () => ({
+  useAuthStore: jest.fn((selector) => {
+    const state = {
+      session: null,
+      loading: false,
+      initializeAuth: jest.fn(),
+    };
+    return selector(state);
+  }),
 }));
 
 jest.mock('react-native-paper', () => {
@@ -58,7 +75,7 @@ import { render } from '@testing-library/react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
-import RootLayout from './_layout';
+import RootLayout from '../../app/_layout';
 
 // Capture module-level calls before any clearAllMocks
 let modulePreventAutoHideAsyncCalled = false;
@@ -116,7 +133,7 @@ describe('RootLayout - Font Loading (8.6)', () => {
     expect(toJSON()).toBeNull();
   });
 
-  it('hides splash screen when fonts are loaded', () => {
+  it('hides splash screen when fonts are loaded and auth is ready', () => {
     (useFonts as jest.Mock).mockReturnValue([true, null]);
     render(<RootLayout />);
     expect(SplashScreen.hideAsync).toHaveBeenCalled();
