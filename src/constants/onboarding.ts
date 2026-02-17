@@ -114,5 +114,5 @@ const LEVEL_KEY_MAP: Record<UserLevelValue, string> = {
 };
 
 export function getEncouragementKey(level: UserLevelValue): string {
-  return `encouragement.${LEVEL_KEY_MAP[level]}`;
+  return `encouragement.${LEVEL_KEY_MAP[level] ?? 'beginner'}`;
 }

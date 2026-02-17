@@ -19,24 +19,29 @@ function getDeviceLanguage(): string {
 export function initI18n(): typeof i18next {
   try {
     // eslint-disable-next-line import/no-named-as-default-member
-    i18next.use(initReactI18next).init({
-      resources: {
-        vi: { translation: vi },
-        en: { translation: en },
-      },
-      lng: getDeviceLanguage(),
-      fallbackLng: 'vi',
-      defaultNS: 'translation',
-      interpolation: {
-        escapeValue: false,
-      },
-      saveMissing: __DEV__,
-      missingKeyHandler: (_lngs, _ns, key) => {
-        if (__DEV__) {
-          Sentry.captureMessage(`Missing i18n key: ${key}`, { level: 'warning' });
-        }
-      },
-    });
+    i18next
+      .use(initReactI18next)
+      .init({
+        resources: {
+          vi: { translation: vi },
+          en: { translation: en },
+        },
+        lng: getDeviceLanguage(),
+        fallbackLng: 'vi',
+        defaultNS: 'translation',
+        interpolation: {
+          escapeValue: false,
+        },
+        saveMissing: __DEV__,
+        missingKeyHandler: (_lngs, _ns, key) => {
+          if (__DEV__) {
+            Sentry.captureMessage(`Missing i18n key: ${key}`, { level: 'warning' });
+          }
+        },
+      })
+      .catch((err: unknown) => {
+        Sentry.captureException(err, { tags: { module: 'i18n' } });
+      });
   } catch (err) {
     Sentry.captureException(err, { tags: { module: 'i18n' } });
   }

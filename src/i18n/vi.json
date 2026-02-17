@@ -110,7 +110,6 @@
   },
   "accessibility": {
     "swipeRight": "Vuốt phải nếu biết từ này",
-    "swipeLeft": "Vuốt trái nếu chưa biết",
     "undoAction": "Hoàn tác thao tác vuốt",
     "tutorialCard": "Thẻ hướng dẫn vuốt — vuốt trái hoặc phải để thực hành",
     "lotusAnimation": "Hình hoa sen — hiệu ứng kết quả",

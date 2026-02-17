@@ -110,7 +110,6 @@
   },
   "accessibility": {
     "swipeRight": "Swipe right if you know this word",
-    "swipeLeft": "Swipe left if you don't know",
     "undoAction": "Undo swipe action",
     "tutorialCard": "Swipe tutorial card — swipe left or right to practice",
     "lotusAnimation": "Lotus flower — result animation",
