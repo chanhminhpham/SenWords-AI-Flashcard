@@ -27,7 +27,7 @@ export default function LoginScreen() {
       });
 
       if (success) {
-        router.replace('/(tabs)' as Href);
+        router.replace('/(auth)/goal-selection' as Href);
       }
     } catch (err) {
       Sentry.captureException(err, { tags: { module: 'auth', provider } });
@@ -38,7 +38,7 @@ export default function LoginScreen() {
 
   const handleSkip = () => {
     enterTrialMode();
-    router.replace('/(tabs)' as Href);
+    router.replace('/(auth)/goal-selection' as Href);
   };
 
   return (

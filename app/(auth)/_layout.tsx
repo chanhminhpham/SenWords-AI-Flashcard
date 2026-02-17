@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth.store';
 /**
  * Navigation guard: check ageVerified + consentGiven from auth store.
  * Prevents deep link bypass to login screen without completing age + consent flow.
+ * Also guards onboarding screens (goal-selection, placement-test, level-result)
+ * requiring auth context.
  */
 export default function AuthLayout() {
   const ageVerified = useAuthStore((s) => s.ageVerified);
@@ -24,12 +26,21 @@ export default function AuthLayout() {
     return <Redirect href={'/(auth)/age-verification' as Href} />;
   }
 
+  // Guard: onboarding screens require login/trial completion
+  const onboardingScreens = ['goal-selection', 'placement-test', 'level-result'];
+  if (onboardingScreens.includes(currentScreen) && (!ageVerified || !consentGiven)) {
+    return <Redirect href={'/(auth)/age-verification' as Href} />;
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="welcome" />
       <Stack.Screen name="age-verification" />
       <Stack.Screen name="privacy-consent" />
       <Stack.Screen name="login" />
+      <Stack.Screen name="goal-selection" />
+      <Stack.Screen name="placement-test" />
+      <Stack.Screen name="level-result" />
     </Stack>
   );
 }

@@ -21,6 +21,7 @@ import { PaperProvider } from 'react-native-paper';
 import { ENV, validateEnv } from '@/config/env';
 import { useDeviceTier } from '@/hooks/use-device-tier';
 import { useAuthStore } from '@/stores/auth.store';
+import { useOnboardingStore } from '@/stores/onboarding.store';
 import { senWordDarkTheme } from '@/theme/dark-theme';
 import { senWordLightTheme } from '@/theme/sen-word-theme';
 
@@ -48,6 +49,7 @@ function RootLayout() {
   const trialMode = useAuthStore((s) => s.trialMode);
   const authLoading = useAuthStore((s) => s.loading);
   const initializeAuth = useAuthStore((s) => s.initializeAuth);
+  const onboardingCompleted = useOnboardingStore((s) => s.onboardingCompleted);
 
   const [fontsLoaded, fontError] = useFonts({
     NunitoSans_300Light,
@@ -80,14 +82,23 @@ function RootLayout() {
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    if ((session || trialMode) && inAuthGroup) {
-      // Authenticated or trial user in auth screens → go to tabs
+    if ((session || trialMode) && inAuthGroup && onboardingCompleted) {
+      // Authenticated/trial user who completed onboarding still in auth → go to tabs
       router.replace('/(tabs)' as Href);
     } else if (!session && !trialMode && !inAuthGroup) {
       // Unauthenticated user outside auth → go to welcome
       router.replace('/(auth)/welcome' as Href);
     }
-  }, [session, trialMode, segments, authLoading, fontsLoaded, fontError, router]);
+  }, [
+    session,
+    trialMode,
+    segments,
+    authLoading,
+    fontsLoaded,
+    fontError,
+    router,
+    onboardingCompleted,
+  ]);
 
   if (!fontsLoaded && !fontError) {
     return null;

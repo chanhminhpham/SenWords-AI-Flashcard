@@ -75,7 +75,7 @@ describe('LoginScreen', () => {
     fireEvent.press(screen.getByTestId('skip-button'));
 
     expect(useAuthStore.getState().trialMode).toBe(true);
-    expect(router.replace).toHaveBeenCalledWith('/(tabs)');
+    expect(router.replace).toHaveBeenCalledWith('/(auth)/goal-selection');
   });
 
   it('does not navigate when dateOfBirth is missing on SSO press', () => {
