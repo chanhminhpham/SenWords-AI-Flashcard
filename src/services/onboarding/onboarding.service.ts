@@ -23,6 +23,7 @@ function delay(ms: number): Promise<void> {
  */
 export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
   try {
+    console.log('[OnboardingService] Checking onboarding for user:', userId);
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('profiles')
@@ -31,15 +32,32 @@ export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
       .single();
 
     if (error) {
-      Sentry.captureException(error, {
+      console.error('[OnboardingService] Error fetching profile:', JSON.stringify(error, null, 2));
+      // Convert Supabase error object to Error instance for Sentry
+      const err = new Error(
+        error.message || 'Failed to fetch profile for onboarding check'
+      );
+      Sentry.captureException(err, {
         tags: { code: 'ONBOARDING_CHECK_FAILED' },
+        extra: {
+          supabaseError: error,
+          userId,
+        },
       });
       return false;
     }
 
+    console.log('[OnboardingService] Profile data:', {
+      learning_goal: data?.learning_goal,
+      level: data?.level,
+    });
+
     // User has completed onboarding if both fields are set
-    return data?.learning_goal !== null && data?.level !== null;
+    const completed = data?.learning_goal !== null && data?.level !== null;
+    console.log('[OnboardingService] Onboarding completed:', completed);
+    return completed;
   } catch (err) {
+    console.error('[OnboardingService] Exception checking onboarding:', err);
     Sentry.captureException(err, {
       tags: { code: 'ONBOARDING_CHECK_ERROR' },
     });

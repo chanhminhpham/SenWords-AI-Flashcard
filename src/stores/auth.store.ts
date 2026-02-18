@@ -56,23 +56,51 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initializeAuth: async () => {
     try {
+      console.log('[AuthStore] Initializing auth...');
       set({ loading: true, error: null });
+
+      console.log('[AuthStore] Getting session...');
       const session = await getSession();
+      console.log('[AuthStore] Session retrieved:', !!session);
+
       set({
         session,
         user: session?.user ?? null,
-        loading: false,
       });
 
       // If user has existing session, check their onboarding status from server
       if (session?.user) {
-        const { hasCompletedOnboarding } = await import('@/services/onboarding/onboarding.service');
-        const { useOnboardingStore } = await import('@/stores/onboarding.store');
-        const completed = await hasCompletedOnboarding(session.user.id);
-        if (completed) {
-          useOnboardingStore.getState().completeOnboarding();
+        console.log('[AuthStore] Checking onboarding status for user:', session.user.id);
+        try {
+          // Add timeout to prevent infinite hang
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Onboarding check timeout')), 10000)
+          );
+
+          const { hasCompletedOnboarding } = await import('@/services/onboarding/onboarding.service');
+          const { useOnboardingStore } = await import('@/stores/onboarding.store');
+
+          const completed = await Promise.race([
+            hasCompletedOnboarding(session.user.id),
+            timeoutPromise
+          ]) as boolean;
+
+          console.log('[AuthStore] Onboarding check result:', completed);
+          if (completed) {
+            console.log('[AuthStore] Marking onboarding as completed');
+            useOnboardingStore.getState().completeOnboarding();
+          } else {
+            console.log('[AuthStore] Onboarding not completed, keeping as incomplete');
+          }
+        } catch (onboardingError) {
+          console.error('[AuthStore] Onboarding check failed:', onboardingError);
+          // Continue anyway - don't block app from loading
         }
       }
+
+      // Set loading false AFTER onboarding check completes (or fails)
+      console.log('[AuthStore] Auth initialization complete');
+      set({ loading: false });
 
       // Subscribe to auth state changes — differentiate event types
       const supabase = getSupabase();
@@ -124,16 +152,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Check server for existing onboarding completion status
       // Returning users skip onboarding, new users go through it
+      console.log('[AuthStore] Checking onboarding after sign-in for user:', result.user?.id);
       const { hasCompletedOnboarding } = await import('@/services/onboarding/onboarding.service');
       const { useOnboardingStore } = await import('@/stores/onboarding.store');
 
       if (result.user) {
         const completed = await hasCompletedOnboarding(result.user.id);
+        console.log('[AuthStore] Post-login onboarding check result:', completed);
         if (completed) {
           // Returning user — mark onboarding as complete
+          console.log('[AuthStore] Marking onboarding as completed (returning user)');
           useOnboardingStore.getState().completeOnboarding();
         } else {
           // New user — reset onboarding state to ensure clean flow
+          console.log('[AuthStore] Resetting onboarding (new user)');
           useOnboardingStore.getState().resetOnboarding();
         }
       }

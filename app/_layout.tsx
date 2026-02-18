@@ -6,67 +6,6 @@ import 'react-native-url-polyfill/auto';
 // Initialize Web Crypto polyfill (provides crypto API for PKCE)
 polyfillWebCrypto();
 
-// HACK: Provide minimal crypto.subtle polyfill for Supabase
-// This is a workaround because expo-standard-web-crypto doesn't provide crypto.subtle
-if (typeof crypto !== 'undefined' && !crypto.subtle) {
-  Object.defineProperty(crypto, 'subtle', {
-    configurable: true,
-    enumerable: true,
-    value: {
-      // Stub implementation - Supabase implicit flow should not actually use these
-      importKey: async () => {
-        console.warn('[POLYFILL] crypto.subtle.importKey called - this is a stub');
-        return {} as CryptoKey;
-      },
-      exportKey: async () => {
-        console.warn('[POLYFILL] crypto.subtle.exportKey called - this is a stub');
-        return new ArrayBuffer(0);
-      },
-      digest: async (algorithm: string, data: ArrayBuffer) => {
-        console.warn('[POLYFILL] crypto.subtle.digest called - using stub');
-        // Very basic stub - just return some bytes
-        return new Uint8Array(32).buffer;
-      },
-      encrypt: async () => {
-        console.warn('[POLYFILL] crypto.subtle.encrypt called - this is a stub');
-        return new ArrayBuffer(0);
-      },
-      decrypt: async () => {
-        console.warn('[POLYFILL] crypto.subtle.decrypt called - this is a stub');
-        return new ArrayBuffer(0);
-      },
-      sign: async () => {
-        console.warn('[POLYFILL] crypto.subtle.sign called - this is a stub');
-        return new ArrayBuffer(0);
-      },
-      verify: async () => {
-        console.warn('[POLYFILL] crypto.subtle.verify called - this is a stub');
-        return false;
-      },
-      generateKey: async () => {
-        console.warn('[POLYFILL] crypto.subtle.generateKey called - this is a stub');
-        return {} as CryptoKey;
-      },
-      deriveKey: async () => {
-        console.warn('[POLYFILL] crypto.subtle.deriveKey called - this is a stub');
-        return {} as CryptoKey;
-      },
-      deriveBits: async () => {
-        console.warn('[POLYFILL] crypto.subtle.deriveBits called - this is a stub');
-        return new ArrayBuffer(0);
-      },
-      wrapKey: async () => {
-        console.warn('[POLYFILL] crypto.subtle.wrapKey called - this is a stub');
-        return new ArrayBuffer(0);
-      },
-      unwrapKey: async () => {
-        console.warn('[POLYFILL] crypto.subtle.unwrapKey called - this is a stub');
-        return {} as CryptoKey;
-      },
-    },
-  });
-}
-
 /* eslint-disable import/first -- Polyfills must execute before other imports */
 import '../global.css';
 
@@ -185,14 +124,40 @@ function RootLayout() {
     if (authLoading || (!fontsLoaded && !fontError) || (!dbReady && !dbError)) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
 
-    if ((session || trialMode) && inAuthGroup && onboardingCompleted) {
-      // Authenticated/trial user who completed onboarding still in auth → go to tabs
-      router.replace('/(tabs)' as Href);
-    } else if (!session && !trialMode && !inAuthGroup) {
-      // Unauthenticated user outside auth → go to welcome
+    // DEBUG: Log routing state
+    console.log('[RootLayout] Routing check:', {
+      session: !!session,
+      trialMode,
+      inAuthGroup,
+      inTabsGroup,
+      onboardingCompleted,
+      currentSegment: segments[0],
+    });
+
+    // Case 1: Authenticated/trial user who hasn't completed onboarding and is outside auth → go to onboarding
+    if ((session || trialMode) && !onboardingCompleted && !inAuthGroup) {
+      console.log('[RootLayout] → Redirecting to onboarding (user authenticated but not completed)');
       router.replace('/(auth)/welcome' as Href);
+      return;
     }
+
+    // Case 2: Authenticated/trial user who completed onboarding and is in auth → go to tabs
+    if ((session || trialMode) && onboardingCompleted && inAuthGroup) {
+      console.log('[RootLayout] → Redirecting to tabs (user completed onboarding)');
+      router.replace('/(tabs)/home' as Href);
+      return;
+    }
+
+    // Case 3: Unauthenticated user outside auth → go to welcome
+    if (!session && !trialMode && !inAuthGroup) {
+      console.log('[RootLayout] → Redirecting to welcome (user not authenticated)');
+      router.replace('/(auth)/welcome' as Href);
+      return;
+    }
+
+    console.log('[RootLayout] No routing action needed');
   }, [
     session,
     trialMode,

@@ -1,12 +1,13 @@
 // Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6)
 import { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Text } from 'react-native-paper';
+import { Text, Button } from 'react-native-paper';
 
 import { useTranslation } from 'react-i18next';
+import { count } from 'drizzle-orm';
 
 import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
 import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
@@ -20,16 +21,38 @@ import {
   logLearningEvent,
   revertScheduleAdjustment,
 } from '@/services/sr/sr.service';
+import { getDb } from '@/db';
+import { vocabularyCards } from '@/db/local-schema';
 
 /**
- * Fetch SR queue from SQLite (placeholder — will be replaced with actual query in Story 1.7).
- * For now, returns empty array to demonstrate UI flow.
+ * Fetch SR queue from SQLite (simple implementation for Story 1.6 testing).
+ * Story 1.7 will implement proper SR scheduling logic with nextReviewAt filtering.
+ * For now, just fetch first 20 cards by difficulty level for testing swipe UI.
  */
 async function fetchSRQueue(userId: string): Promise<VocabularyCard[]> {
-  // Placeholder: Story 1.7 will implement actual SR queue fetching
-  // For now, return empty array to allow testing UI without database
-  console.log('Fetching SR queue for user:', userId);
-  return [];
+  console.log('[Learn] Fetching SR queue for user:', userId);
+
+  try {
+    const db = getDb();
+
+    // Simple query: fetch 20 cards, ordered by difficulty (easiest first)
+    // Story 1.7 will replace this with proper SR queue logic:
+    // - JOIN with sr_schedule table
+    // - Filter by nextReviewAt <= now
+    // - Order by priority (overdue first)
+    const cards = db
+      .select()
+      .from(vocabularyCards)
+      .orderBy(vocabularyCards.difficultyLevel)
+      .limit(20)
+      .all();
+
+    console.log('[Learn] Fetched', cards.length, 'cards from database');
+    return cards;
+  } catch (error) {
+    console.error('[Learn] Failed to fetch SR queue:', error);
+    return [];
+  }
 }
 
 /**
@@ -64,7 +87,9 @@ export default function LearnScreen() {
 
   // Load queue into store when data arrives
   useEffect(() => {
+    console.log('[Learn] useEffect - srQueue:', srQueue?.length ?? 0, 'cards');
     if (srQueue && srQueue.length > 0) {
+      console.log('[Learn] Loading queue with', srQueue.length, 'cards');
       loadQueue(srQueue);
 
       // Prefetch first 3 card images (if they have images)
@@ -75,11 +100,30 @@ export default function LearnScreen() {
           setPrefetchedImages((prev) => new Set(prev).add(card.id));
         }
       });
+    } else {
+      console.log('[Learn] No cards in queue - showing empty state');
     }
   }, [srQueue, loadQueue, prefetchedImages]);
 
   const currentCard = getCurrentCard();
   const { current, total } = getQueueProgress();
+
+  // DEBUG: Check database state
+  const checkDatabase = useCallback(async () => {
+    try {
+      const db = getDb();
+      const result = db.select({ value: count() }).from(vocabularyCards).all();
+      const totalCards = result[0]?.value ?? 0;
+      console.log('[Learn DEBUG] Total cards in database:', totalCards);
+      Alert.alert(
+        'Database Check',
+        `Total vocabulary cards: ${totalCards}\nQueue size: ${srQueue?.length ?? 0}\nCurrent card: ${currentCard ? 'Yes' : 'No'}`
+      );
+    } catch (error) {
+      console.error('[Learn DEBUG] Database check failed:', error);
+      Alert.alert('Database Error', String(error));
+    }
+  }, [srQueue, currentCard]);
 
   // Handle swipe action
   const handleSwipe = useCallback(
@@ -183,6 +227,10 @@ export default function LearnScreen() {
           }}>
           {t('learn.emptySubtitle', 'Nghỉ ngơi, gặp lại sau')}
         </Text>
+        {/* DEBUG: Button to check database */}
+        <Button mode="outlined" onPress={checkDatabase} style={{ marginTop: 24 }}>
+          DEBUG: Check Database
+        </Button>
       </View>
     );
   }

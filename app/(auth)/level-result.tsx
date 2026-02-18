@@ -76,7 +76,7 @@ export default function LevelResultScreen() {
 
     completeOnboarding();
     setSaving(false);
-    router.replace('/(tabs)' as Href);
+    router.replace('/(tabs)/home' as Href);
   };
 
   if (determinedLevel === null) {
