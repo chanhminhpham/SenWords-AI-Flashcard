@@ -104,24 +104,46 @@ export default function LevelResultScreen() {
         </Animated.View>
 
         {/* Level badge */}
-        <Text
-          variant="headlineSmall"
-          style={[styles.levelText, { color: theme.colors.onSurface }]}
-          testID="level-badge"
-          accessibilityRole="header"
-          accessibilityLabel={t('accessibility.levelBadge', { levelLabel })}>
-          {t('levelResult.levelBadge', { levelLabel })}
-        </Text>
+        <View testID="level-badge" accessibilityRole="header">
+          <Text
+            variant="headlineSmall"
+            style={[styles.levelText, { color: theme.colors.onSurface }]}>
+            {t('levelResult.levelPrefix')}
+          </Text>
+          <Text
+            variant="headlineSmall"
+            style={[styles.levelText, { color: theme.colors.onSurface }]}
+            testID="level-name">
+            {levelLabel}
+          </Text>
+        </View>
 
         {/* Summary */}
-        <Text
-          variant="bodyLarge"
-          style={[styles.summary, { color: theme.colors.onSurfaceVariant }]}
-          testID="result-summary">
-          {manualLevelSelected
-            ? t('levelResult.manualSummary')
-            : t('levelResult.testSummary', { correctCount })}
-        </Text>
+        <View testID="result-summary" style={styles.summaryRow}>
+          {manualLevelSelected ? (
+            <Text
+              variant="bodyLarge"
+              style={[styles.summary, { color: theme.colors.onSurfaceVariant }]}>
+              {t('levelResult.manualSummary')}
+            </Text>
+          ) : (
+            <>
+              <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+                {t('levelResult.summaryPrefix')}{' '}
+              </Text>
+              <Text
+                variant="bodyLarge"
+                style={{ color: theme.colors.onSurfaceVariant, fontWeight: '600' }}
+                testID="score-count">
+                {`${correctCount}/10`}
+              </Text>
+              <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+                {' '}
+                {t('levelResult.summarySuffix')}
+              </Text>
+            </>
+          )}
+        </View>
 
         {/* Encouragement */}
         <Text
@@ -185,6 +207,11 @@ const styles = StyleSheet.create({
   levelText: {
     textAlign: 'center',
     marginBottom: 12,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   summary: {
     textAlign: 'center',

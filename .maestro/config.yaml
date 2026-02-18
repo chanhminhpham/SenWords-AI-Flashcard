@@ -1,0 +1,16 @@
+# Maestro E2E Test Configuration
+# Project: SenWords AI Flashcard
+# Platform: React Native (Expo)
+
+# App identifier — set via environment variable or override here
+# For iOS Simulator: bundle identifier from app.config.ts
+# For Android Emulator: package name from app.config.ts
+# Usage: APP_ID=com.senwords.app maestro test .maestro/flows/
+
+# Default flow execution settings
+flows:
+  - '.maestro/flows/*'
+
+# Environment variables
+env:
+  APP_ID: 'com.chanhpham.aiflashcard'

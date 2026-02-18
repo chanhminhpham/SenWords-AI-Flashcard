@@ -88,8 +88,11 @@
   },
   "levelResult": {
     "levelBadge": "You are at: {{levelLabel}}",
+    "levelPrefix": "You are at:",
     "manualSummary": "You chose your own level",
     "testSummary": "You know {{correctCount}}/10 words",
+    "summaryPrefix": "You know",
+    "summarySuffix": "words",
     "startButton": "Start Learning",
     "featureUnlock": "Features unlocked:",
     "featureSwipe": "• Swipe right/left to learn vocabulary",

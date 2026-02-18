@@ -1,0 +1,32 @@
+# E2E Flow 10: Navigation Guard — Auth Flow Order Enforced
+#
+# Requirements covered:
+#   Story 1.3 AC2: Flow order: Age Verification → Privacy Consent → SSO Login
+#   Story 1.3 Task 4.1: Navigation guard prevents deep link bypass
+#   Story 1.4 AC5: Deep links to goal-selection/placement-test blocked without auth
+#
+# Test case: Fresh app start → verify welcome screen is the entry point
+#            → cannot bypass to login without age verification
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Step 1: App Launch — Welcome Screen ─────────────────────────
+# Req: Story 1.3 — First screen for new users is Welcome
+- assertVisible: 'SenWords'
+- assertVisible: 'Từ vựng nở từ gốc'
+- assertVisible: 'Bắt đầu'
+
+# Verify login/consent screens are NOT visible (guard prevents direct access)
+- assertNotVisible: 'Đăng nhập'
+- assertNotVisible: 'Chính sách Bảo mật'
+
+# ── Step 2: Verify flow order enforcement ───────────────────────
+# Tap "Bắt đầu" → should go to age verification (NOT login)
+- tapOn: 'Bắt đầu'
+- assertVisible: 'Xác minh tuổi'
+- assertNotVisible: 'Đăng nhập'

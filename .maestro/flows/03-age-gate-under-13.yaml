@@ -1,0 +1,55 @@
+# E2E Flow 3: Age Gate — Under 13 Rejection
+#
+# Requirements covered:
+#   Story 1.3 AC1: Under 13 rejection — "Ứng dụng dành cho người từ 13 tuổi trở lên"
+#   Story 1.3 AC1: No SSO flow initiated, no data collected
+#   Story 1.3 AC1: User cannot proceed further
+#
+# Test case: New user → Welcome → Age Verification (age 10) → Rejection message shown
+#            → No further navigation possible
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Step 1: Welcome → Start ─────────────────────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+
+# ── Step 2: Age Verification — Enter under-13 date ──────────────
+# Req: Story 1.3 AC1 — Under 13 rejection
+# Enter birth date: June 15, 2016 (age ~9-10 in 2026)
+- assertVisible: 'Xác minh tuổi'
+
+- tapOn:
+    id: 'day-input'
+- inputText: '15'
+
+- tapOn:
+    id: 'month-input'
+- inputText: '06'
+
+- tapOn:
+    id: 'year-input'
+- inputText: '2016'
+
+- tapOn:
+    id: 'verify-button'
+
+# ── Step 3: Verify Rejection ────────────────────────────────────
+# Req: Story 1.3 AC1 — Rejection message displayed
+- assertVisible:
+    id: 'under-13-message'
+- assertVisible: 'Ứng dụng dành cho người từ 13 tuổi trở lên'
+
+# Req: Story 1.3 AC1 — No SSO flow initiated (consent screen NOT visible)
+- assertNotVisible: 'Chính sách Bảo mật'
+
+# Req: Story 1.3 AC1 — No continue button available
+- assertNotVisible:
+    id: 'verify-button'
+- assertNotVisible:
+    id: 'continue-button'

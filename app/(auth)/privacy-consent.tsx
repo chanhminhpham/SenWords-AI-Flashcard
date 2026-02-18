@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -37,18 +37,19 @@ export default function PrivacyConsentScreen() {
         </ScrollView>
 
         {/* Consent checkbox */}
-        <View className="mb-lg flex-row items-center">
-          <Checkbox
-            status={agreed ? 'checked' : 'unchecked'}
-            onPress={() => setAgreed(!agreed)}
-            testID="consent-checkbox"
-          />
-          <View className="ml-sm flex-1">
-            <Text variant="bodyMedium" onPress={() => setAgreed(!agreed)}>
-              {t('privacyConsent.agreeCheckbox')}
-            </Text>
+        <Pressable
+          testID="consent-checkbox"
+          onPress={() => setAgreed(!agreed)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: agreed }}
+          className="mb-lg flex-row items-center">
+          <View pointerEvents="none">
+            <Checkbox status={agreed ? 'checked' : 'unchecked'} />
           </View>
-        </View>
+          <View className="ml-sm flex-1">
+            <Text variant="bodyMedium">{t('privacyConsent.agreeCheckbox')}</Text>
+          </View>
+        </Pressable>
 
         {/* CTA — disabled until consent given */}
         <View className="mb-2xl px-lg">

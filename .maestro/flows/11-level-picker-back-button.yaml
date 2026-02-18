@@ -1,0 +1,47 @@
+# E2E Flow 11: Level Picker — Back Button Returns to Goal Selection
+#
+# Requirements covered:
+#   Story 1.4 AC7: Manual level selection has back button
+#   Story 1.4 AC7: "Quay lại chọn mục tiêu" returns to goal selection view
+#
+# Test case: Goal Selection → Manual Level → Back → Goal Selection view restored
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Steps 1-4: Navigate to goal selection ───────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+- runFlow: ../shared/complete-age-verification.yaml
+- runFlow: ../shared/complete-privacy-consent.yaml
+- runFlow: ../shared/skip-login-trial-mode.yaml
+
+# ── Step 5: Enter level picker then go back ─────────────────────
+- assertVisible:
+    id: 'goal-selection-screen'
+
+# Tap manual level button
+- tapOn:
+    id: 'manual-level-button'
+
+# Verify we're on level picker
+- assertVisible:
+    id: 'level-picker-screen'
+- assertVisible: 'Chọn trình độ của bạn'
+
+# Tap back button
+- tapOn:
+    id: 'back-to-goals-button'
+
+# Should return to goal selection
+- assertVisible:
+    id: 'goal-selection-screen'
+- assertVisible: 'Bạn muốn học tiếng Anh để làm gì?'
+
+# Goal cards should still be visible
+- assertVisible:
+    id: 'goal-card-ielts'

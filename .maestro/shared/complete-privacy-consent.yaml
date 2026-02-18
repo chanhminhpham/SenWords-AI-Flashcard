@@ -1,0 +1,24 @@
+# Shared sub-flow: Complete privacy consent
+# Requirement: Story 1.3 AC2 — Privacy consent checkbox + continue
+# Input: User is on the privacy-consent screen
+# Output: User navigates to login screen
+
+appId: com.chanhpham.aiflashcard
+
+---
+# Verify privacy policy title is visible
+- assertVisible: 'Chính sách Bảo mật'
+
+# Check the consent checkbox
+- tapOn:
+    id: 'consent-checkbox'
+
+# Verify consent text
+- assertVisible: 'Tôi đồng ý với Chính sách Bảo mật'
+
+# Tap continue button (should be enabled after checkbox)
+- tapOn:
+    id: 'continue-button'
+
+# Verify navigation to login screen
+- assertVisible: 'Đăng nhập'

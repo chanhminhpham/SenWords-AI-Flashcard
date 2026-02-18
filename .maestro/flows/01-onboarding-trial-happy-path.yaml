@@ -1,0 +1,170 @@
+# E2E Flow 1: Onboarding Happy Path (Trial Mode + Placement Test)
+#
+# Requirements covered:
+#   Story 1.3 AC1: Age Gate (valid age ≥ 13)
+#   Story 1.3 AC2: Age Confirmed + Privacy Consent
+#   Story 1.3 AC4: Trial Mode (skip login)
+#   Story 1.4 AC1: Goal Selection Screen (6 goals)
+#   Story 1.4 AC2: Placement Test (tutorial + 10 words)
+#   Story 1.4 AC3: Level Determination & Results Display
+#   Story 1.4 AC5: Navigation Integration
+#
+# Test case: New user → Welcome → Age (25yo) → Consent → Skip Login
+#            → Select IELTS goal → Placement Test (all 10 words) → Level Result → Home
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Step 1: Welcome Screen ──────────────────────────────────────
+# Req: Story 1.3 AC2 — Welcome screen with "Bắt đầu" CTA
+- assertVisible: 'SenWords'
+- assertVisible: 'Từ vựng nở từ gốc'
+- tapOn: 'Bắt đầu'
+
+# ── Step 2: Age Verification ────────────────────────────────────
+# Req: Story 1.3 AC2 — Age ≥ 13 confirmed, navigate to consent
+- runFlow: ../shared/complete-age-verification.yaml
+
+# ── Step 3: Privacy Consent ─────────────────────────────────────
+# Req: Story 1.3 AC2 — Consent checkbox + continue
+- runFlow: ../shared/complete-privacy-consent.yaml
+
+# ── Step 4: Login — Skip to Trial Mode ──────────────────────────
+# Req: Story 1.3 AC4 — Trial mode skip
+- runFlow: ../shared/skip-login-trial-mode.yaml
+
+# ── Step 5: Goal Selection ──────────────────────────────────────
+# Req: Story 1.4 AC1 — 6 goals displayed, select one
+- assertVisible:
+    id: 'goal-selection-screen'
+
+# Verify all 6 goal cards are visible
+- assertVisible:
+    id: 'goal-card-ielts'
+- assertVisible:
+    id: 'goal-card-business'
+- assertVisible:
+    id: 'goal-card-travel'
+- assertVisible:
+    id: 'goal-card-reading'
+- assertVisible:
+    id: 'goal-card-movies'
+- assertVisible:
+    id: 'goal-card-conversation'
+
+# Verify skip and manual level buttons exist
+- assertVisible:
+    id: 'skip-button'
+- assertVisible:
+    id: 'manual-level-button'
+
+# Select IELTS goal
+- tapOn:
+    id: 'goal-card-ielts'
+
+# Tap continue
+- tapOn:
+    id: 'continue-button'
+
+# ── Step 6: Placement Test ──────────────────────────────────────
+# Req: Story 1.4 AC2 — Tutorial card first, then 10 words
+- assertVisible:
+    id: 'placement-test-screen'
+
+# Verify tutorial label shown first
+- assertVisible:
+    id: 'progress-counter'
+
+# Complete tutorial card (swipe right to dismiss)
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Now placement words should appear
+# Swipe through all 10 words (mix of right/left swipes)
+# Words: cat, happy, book, journey, decision, accomplish, influence, environment, subsequent, ubiquitous
+
+# Word 1: cat — know (right)
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Word 2: happy — know (right)
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Word 3: book — know (right)
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Word 4: journey — know (right)
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Word 5: decision — know (right)
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Word 6: accomplish — don't know (left)
+- swipe:
+    direction: LEFT
+    duration: 500
+
+# Word 7: influence — don't know (left)
+- swipe:
+    direction: LEFT
+    duration: 500
+
+# Word 8: environment — don't know (left)
+- swipe:
+    direction: LEFT
+    duration: 500
+
+# Word 9: subsequent — don't know (left)
+- swipe:
+    direction: LEFT
+    duration: 500
+
+# Word 10: ubiquitous — don't know (left)
+- swipe:
+    direction: LEFT
+    duration: 500
+
+# ── Step 7: Level Result ────────────────────────────────────────
+# Req: Story 1.4 AC3 — Level determination, results display
+# 5 correct out of 10 → Pre-Intermediate level (4-6 correct = PreIntermediate)
+- assertVisible:
+    id: 'level-result-screen'
+- assertVisible:
+    id: 'lotus-animation'
+- assertVisible:
+    id: 'level-badge'
+- assertVisible:
+    id: 'result-summary'
+- assertVisible:
+    id: 'encouragement'
+- assertVisible:
+    id: 'feature-unlock-list'
+
+# Verify level badge shows "Trước trung cấp" (Pre-Intermediate for 5/10)
+- assertVisible: 'Trước trung cấp'
+
+# Verify summary shows correct count
+- assertVisible: '5/10'
+
+# Tap start button to complete onboarding
+- tapOn:
+    id: 'start-button'
+
+# ── Step 8: Home Tab Reached ────────────────────────────────────
+# Req: Story 1.4 AC5 — After level result, routes to (tabs) group
+# Verify we are now on the home/tabs screen
+- assertVisible: 'Học'

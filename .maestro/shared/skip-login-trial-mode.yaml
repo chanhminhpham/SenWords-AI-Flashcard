@@ -1,0 +1,23 @@
+# Shared sub-flow: Skip login (enter trial mode)
+# Requirement: Story 1.3 AC4 — Trial mode skip, still requires age gate + consent
+# Input: User is on the login screen
+# Output: User navigates to goal-selection screen
+
+appId: com.chanhpham.aiflashcard
+
+---
+# Verify login screen is displayed with SSO buttons
+- assertVisible: 'Đăng nhập'
+- assertVisible:
+    id: 'google-button'
+- assertVisible:
+    id: 'facebook-button'
+- assertVisible:
+    id: 'apple-button'
+
+# Tap skip/trial mode button
+- tapOn:
+    id: 'skip-button'
+
+# Verify navigation to goal selection
+- assertVisible: 'Bạn muốn học tiếng Anh để làm gì?'

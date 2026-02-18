@@ -1,0 +1,60 @@
+# E2E Flow 7: Placement Test — Undo Functionality
+#
+# Requirements covered:
+#   Story 1.4 AC2: UndoSnackbar appears after each swipe for 3 seconds
+#   Story 1.4 AC2: Undo tap reverses last swipe, goes back to previous card
+#   Story 1.4 AC2: Progress counter "X / 10"
+#
+# Test case: Start placement test → swipe a card → tap undo → card returns
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Steps 1-4: Navigate to goal selection ───────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+- runFlow: ../shared/complete-age-verification.yaml
+- runFlow: ../shared/complete-privacy-consent.yaml
+- runFlow: ../shared/skip-login-trial-mode.yaml
+
+# ── Step 5: Skip goal selection ─────────────────────────────────
+- tapOn:
+    id: 'skip-button'
+
+# ── Step 6: Complete tutorial card ──────────────────────────────
+- assertVisible:
+    id: 'placement-test-screen'
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# ── Step 7: Swipe first word, verify undo snackbar ──────────────
+# Progress should show "1 / 10"
+- assertVisible: '1 / 10'
+
+# Swipe first word right
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Undo snackbar should appear with "Hoàn tác" action
+- assertVisible: 'Hoàn tác'
+
+# Tap undo
+- tapOn: 'Hoàn tác'
+
+# Progress should go back to "1 / 10" (card returned)
+- assertVisible: '1 / 10'
+
+# ── Step 8: Swipe again and continue ────────────────────────────
+# Swipe the same card again
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Now on word 2
+- assertVisible: '2 / 10'

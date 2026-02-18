@@ -88,8 +88,11 @@
   },
   "levelResult": {
     "levelBadge": "Bạn đang ở: {{levelLabel}}",
+    "levelPrefix": "Bạn đang ở:",
     "manualSummary": "Bạn đã tự chọn trình độ",
     "testSummary": "Bạn biết {{correctCount}}/10 từ",
+    "summaryPrefix": "Bạn biết",
+    "summarySuffix": "từ",
     "startButton": "Bắt đầu học",
     "featureUnlock": "Tính năng mở khóa:",
     "featureSwipe": "• Vuốt phải/trái để học từ vựng",

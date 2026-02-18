@@ -15,7 +15,7 @@ interface LearningEngineState {
   queueCards: VocabularyCard[];
   currentIndex: number;
   undoBuffer: UndoAction | null;
-  undoTimeoutId: NodeJS.Timeout | null;
+  undoTimeoutId: ReturnType<typeof setTimeout> | null;
 
   // Actions
   loadQueue: (cards: VocabularyCard[]) => void;

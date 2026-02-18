@@ -1,0 +1,85 @@
+# E2E Flow 4: Age Gate — Invalid Date Entry
+#
+# Requirements covered:
+#   Story 1.3 AC1: Age verification validation
+#   Story 1.3 UX Spec: Error color #E57373, error message displayed
+#
+# Test case: New user → Welcome → Age Verification → Enter invalid date
+#            → Error message shown → User stays on same screen
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Step 1: Welcome → Start ─────────────────────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+
+# ── Step 2: Enter invalid date (month 13) ───────────────────────
+- assertVisible: 'Xác minh tuổi'
+
+- tapOn:
+    id: 'day-input'
+- inputText: '15'
+
+- tapOn:
+    id: 'month-input'
+- inputText: '13'
+
+- tapOn:
+    id: 'year-input'
+- inputText: '2001'
+
+- tapOn:
+    id: 'verify-button'
+
+# ── Step 3: Verify error message ────────────────────────────────
+# Req: Error message displayed
+- assertVisible:
+    id: 'error-message'
+- assertVisible: 'Vui lòng nhập ngày sinh hợp lệ'
+
+# User is still on age verification screen (not navigated away)
+- assertVisible: 'Xác minh tuổi'
+- assertNotVisible: 'Chính sách Bảo mật'
+
+# ── Step 4: Enter another invalid date (day 32) ─────────────────
+- tapOn:
+    id: 'day-input'
+- eraseText: 2
+- inputText: '32'
+
+- tapOn:
+    id: 'month-input'
+- eraseText: 2
+- inputText: '01'
+
+- tapOn:
+    id: 'verify-button'
+
+# Error should still show
+- assertVisible:
+    id: 'error-message'
+- assertVisible: 'Vui lòng nhập ngày sinh hợp lệ'
+
+# ── Step 5: Enter empty fields ──────────────────────────────────
+- tapOn:
+    id: 'day-input'
+- eraseText: 2
+
+- tapOn:
+    id: 'month-input'
+- eraseText: 2
+
+- tapOn:
+    id: 'year-input'
+- eraseText: 4
+
+- tapOn:
+    id: 'verify-button'
+
+# Error should show for empty input
+- assertVisible: 'Vui lòng nhập ngày sinh hợp lệ'

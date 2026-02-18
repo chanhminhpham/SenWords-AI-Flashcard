@@ -1,0 +1,88 @@
+# E2E Flow 6: Goal Selection — Skip Button Defaults to "conversation"
+#
+# Requirements covered:
+#   Story 1.4 AC1: "Bỏ qua — bắt đầu với Giao tiếp cơ bản" skip button
+#   Story 1.4 AC1: Default goal = "conversation"
+#   Story 1.4 AC2: After skip, enters placement test
+#
+# Test case: Skip goal selection → placement test → complete → level result
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Steps 1-4: Welcome → Age → Consent → Skip Login ────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+- runFlow: ../shared/complete-age-verification.yaml
+- runFlow: ../shared/complete-privacy-consent.yaml
+- runFlow: ../shared/skip-login-trial-mode.yaml
+
+# ── Step 5: Goal Selection — Use Skip Button ────────────────────
+# Req: Story 1.4 AC1 — Skip button defaults to "conversation"
+- assertVisible:
+    id: 'goal-selection-screen'
+
+# Tap skip button (instead of selecting a goal)
+- tapOn:
+    id: 'skip-button'
+
+# ── Step 6: Placement Test Should Start ─────────────────────────
+# Req: Story 1.4 AC2 — Tutorial shown first
+- assertVisible:
+    id: 'placement-test-screen'
+- assertVisible:
+    id: 'progress-counter'
+
+# Complete tutorial
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Swipe all 10 words right (know all → Upper Intermediate)
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# ── Step 7: Level Result ────────────────────────────────────────
+# 10/10 correct → Upper Intermediate
+- assertVisible:
+    id: 'level-result-screen'
+- assertVisible: 'Trên trung cấp'
+- assertVisible: '10/10'
+
+- tapOn:
+    id: 'start-button'
+
+# Home reached
+- assertVisible: 'Học'

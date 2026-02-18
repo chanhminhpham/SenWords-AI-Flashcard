@@ -79,7 +79,8 @@ describe('LevelResultScreen', () => {
     useOnboardingStore.getState().calculateLevel();
 
     renderScreen();
-    expect(screen.getByText('levelResult.testSummary')).toBeTruthy();
+    expect(screen.getByTestId('score-count')).toBeTruthy();
+    expect(screen.getByText('5/10')).toBeTruthy();
   });
 
   it('shows manual selection summary', () => {

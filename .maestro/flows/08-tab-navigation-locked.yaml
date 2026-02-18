@@ -1,0 +1,105 @@
+# E2E Flow 8: Tab Navigation — Locked Tabs for Beginner Level
+#
+# Requirements covered:
+#   Story 1.10 AC1: 5-tab bottom navigation displayed after onboarding
+#   Story 1.10 AC2: Beginner level — locked tabs show opacity + lock icon
+#   Story 1.10 AC2: Tapping locked tab shows "Học thêm để mở khóa tính năng này!"
+#   Story 1.10 Progressive Unlock Table:
+#     - Beginner: Học + Tôi unlocked; Từ vựng, Scan, Hành trình locked
+#
+# Test case: Complete onboarding as Beginner (0/10) → Verify tab lock behavior
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Steps 1-4: Navigate to goal selection ───────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+- runFlow: ../shared/complete-age-verification.yaml
+- runFlow: ../shared/complete-privacy-consent.yaml
+- runFlow: ../shared/skip-login-trial-mode.yaml
+
+# ── Step 5: Skip goal, then swipe ALL LEFT (0/10 = Beginner) ───
+- tapOn:
+    id: 'skip-button'
+
+# Complete tutorial
+- swipe:
+    direction: RIGHT
+    duration: 500
+
+# Swipe all 10 words LEFT (don't know any = Beginner)
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+- swipe:
+    direction: LEFT
+    duration: 500
+
+# ── Level Result: Beginner (0/10) ──────────────────────────────
+- assertVisible:
+    id: 'level-result-screen'
+- assertVisible: 'Người mới bắt đầu'
+- assertVisible: '0/10'
+
+- tapOn:
+    id: 'start-button'
+
+# ── Step 6: Verify Tab Navigation ──────────────────────────────
+# Req: Story 1.10 AC1 — 5 tabs displayed
+# Home (Học) should be active
+- assertVisible: 'Học'
+- assertVisible: 'Từ vựng'
+- assertVisible: 'Scan'
+- assertVisible: 'Hành trình'
+- assertVisible: 'Tôi'
+
+# ── Step 7: Test Locked Tab — Tap "Scan" (locked for Beginner) ──
+# Req: Story 1.10 AC2 — Tapping locked tab shows snackbar
+- tapOn: 'Scan'
+
+# Snackbar should appear with locked message
+- assertVisible: 'Học thêm để mở khóa tính năng này!'
+
+# ── Step 8: Test Locked Tab — Tap "Từ vựng" (locked) ───────────
+- tapOn: 'Từ vựng'
+- assertVisible: 'Học thêm để mở khóa tính năng này!'
+
+# ── Step 9: Test Locked Tab — Tap "Hành trình" (locked) ────────
+- tapOn: 'Hành trình'
+- assertVisible: 'Học thêm để mở khóa tính năng này!'
+
+# ── Step 10: Test Unlocked Tab — Tap "Tôi" (always unlocked) ───
+# Req: Story 1.10 — Profile tab always unlocked at all levels
+- tapOn: 'Tôi'
+
+# Should navigate to profile (placeholder shows "Tôi" title)
+- assertVisible: 'Đang phát triển...'

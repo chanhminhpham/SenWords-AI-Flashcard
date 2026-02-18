@@ -1,0 +1,44 @@
+# E2E Flow 9: Age Gate — Exactly 13 Years Old (Edge Case)
+#
+# Requirements covered:
+#   Story 1.3 AC1/AC2: Age ≥ 13 passes, age < 13 rejected
+#   Edge case: User who turned 13 today should pass
+#
+# Test case: Enter date exactly 13 years ago → should pass verification
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Step 1: Welcome → Start ─────────────────────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+
+# ── Step 2: Enter date exactly 13 years ago ─────────────────────
+# Date: Feb 18, 2013 (today is Feb 18, 2026 → exactly 13)
+- assertVisible: 'Xác minh tuổi'
+
+- tapOn:
+    id: 'day-input'
+- inputText: '18'
+
+- tapOn:
+    id: 'month-input'
+- inputText: '02'
+
+- tapOn:
+    id: 'year-input'
+- inputText: '2013'
+
+- tapOn:
+    id: 'verify-button'
+
+# ── Step 3: Should pass — navigate to privacy consent ───────────
+# Req: Age ≥ 13 passes
+- assertVisible: 'Chính sách Bảo mật'
+
+# Should NOT show rejection message
+- assertNotVisible: 'Ứng dụng dành cho người từ 13 tuổi trở lên'

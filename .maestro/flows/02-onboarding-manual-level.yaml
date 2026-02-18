@@ -1,0 +1,96 @@
+# E2E Flow 2: Onboarding with Manual Level Selection (Bypass Placement Test)
+#
+# Requirements covered:
+#   Story 1.4 AC7: Manual Level Selection — bypass placement test
+#   Story 1.4 AC1: Goal Selection Screen
+#   Story 1.4 AC3: Level Result Display (manual summary)
+#   Story 1.4 AC5: Navigation Integration
+#
+# Test case: New user → Welcome → Age → Consent → Skip Login
+#            → Goal Selection → "Tôi muốn tự chọn trình độ" → Select Intermediate
+#            → Level Result (manual summary) → Home
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Steps 1-4: Welcome → Age → Consent → Skip Login ────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+- runFlow: ../shared/complete-age-verification.yaml
+- runFlow: ../shared/complete-privacy-consent.yaml
+- runFlow: ../shared/skip-login-trial-mode.yaml
+
+# ── Step 5: Goal Selection → Manual Level ───────────────────────
+# Req: Story 1.4 AC7 — "Tôi muốn tự chọn trình độ" link
+- assertVisible:
+    id: 'goal-selection-screen'
+
+# Select a goal first (travel)
+- tapOn:
+    id: 'goal-card-travel'
+
+# Tap manual level selection button
+- tapOn:
+    id: 'manual-level-button'
+
+# ── Step 6: Level Picker ────────────────────────────────────────
+# Req: Story 1.4 AC7 — 4 level options with Vietnamese descriptions
+- assertVisible:
+    id: 'level-picker-screen'
+
+# Verify title
+- assertVisible: 'Chọn trình độ của bạn'
+
+# Verify all 4 level cards visible
+- assertVisible:
+    id: 'level-card-0'
+- assertVisible:
+    id: 'level-card-1'
+- assertVisible:
+    id: 'level-card-2'
+- assertVisible:
+    id: 'level-card-3'
+
+# Verify Vietnamese level labels
+- assertVisible: 'Người mới bắt đầu'
+- assertVisible: 'Trước trung cấp'
+- assertVisible: 'Trung cấp'
+- assertVisible: 'Trên trung cấp'
+
+# Verify back button exists
+- assertVisible:
+    id: 'back-to-goals-button'
+
+# Select Intermediate level (index 2)
+- tapOn:
+    id: 'level-card-2'
+
+# Confirm selection
+- tapOn:
+    id: 'confirm-level-button'
+
+# ── Step 7: Level Result (Manual) ───────────────────────────────
+# Req: Story 1.4 AC3 — Results screen with manual summary
+- assertVisible:
+    id: 'level-result-screen'
+- assertVisible:
+    id: 'lotus-animation'
+- assertVisible:
+    id: 'level-badge'
+
+# Verify manual selection summary (not placement test summary)
+- assertVisible: 'Bạn đã tự chọn trình độ'
+
+# Verify level badge shows "Trung cấp"
+- assertVisible: 'Trung cấp'
+
+# Tap start
+- tapOn:
+    id: 'start-button'
+
+# ── Step 8: Home Tab ────────────────────────────────────────────
+- assertVisible: 'Học'

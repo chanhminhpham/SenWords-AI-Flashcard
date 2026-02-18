@@ -1,0 +1,56 @@
+# E2E Flow 5: Privacy Consent — Button Disabled Without Checkbox
+#
+# Requirements covered:
+#   Story 1.3 AC2: Privacy consent — must block progression until consent given
+#   Story 1.3 UX Spec: CTA disabled until checkbox checked
+#   Story 1.3 AC2: Privacy policy displayed in Vietnamese
+#
+# Test case: Verify continue button is disabled without consent checkbox
+
+appId: com.chanhpham.aiflashcard
+
+---
+# ── App Launch (clean state) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Steps 1-2: Welcome → Age Verification ───────────────────────
+- assertVisible: 'SenWords'
+- tapOn: 'Bắt đầu'
+- runFlow: ../shared/complete-age-verification.yaml
+
+# ── Step 3: Privacy Consent Screen ──────────────────────────────
+# Req: Story 1.3 AC2 — Privacy policy displayed
+- assertVisible: 'Chính sách Bảo mật'
+
+# Verify privacy policy content is visible (scrollable)
+- assertVisible:
+    id: 'policy-scroll'
+
+# Verify consent checkbox exists
+- assertVisible:
+    id: 'consent-checkbox'
+
+# Verify continue button exists but is disabled
+- assertVisible:
+    id: 'continue-button'
+
+# Try to tap continue WITHOUT checking consent — should NOT navigate
+- tapOn:
+    id: 'continue-button'
+
+# Should still be on privacy consent screen (button was disabled)
+- assertVisible: 'Chính sách Bảo mật'
+- assertNotVisible: 'Đăng nhập'
+
+# ── Step 4: Check consent then continue ─────────────────────────
+# Now check the checkbox
+- tapOn:
+    id: 'consent-checkbox'
+
+# Continue button should now work
+- tapOn:
+    id: 'continue-button'
+
+# Should navigate to login screen
+- assertVisible: 'Đăng nhập'
