@@ -138,7 +138,9 @@ function RootLayout() {
 
     // Case 1: Authenticated/trial user who hasn't completed onboarding and is outside auth → go to onboarding
     if ((session || trialMode) && !onboardingCompleted && !inAuthGroup) {
-      console.log('[RootLayout] → Redirecting to onboarding (user authenticated but not completed)');
+      console.log(
+        '[RootLayout] → Redirecting to onboarding (user authenticated but not completed)'
+      );
       router.replace('/(auth)/welcome' as Href);
       return;
     }

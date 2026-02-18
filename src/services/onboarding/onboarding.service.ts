@@ -34,9 +34,7 @@ export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
     if (error) {
       console.error('[OnboardingService] Error fetching profile:', JSON.stringify(error, null, 2));
       // Convert Supabase error object to Error instance for Sentry
-      const err = new Error(
-        error.message || 'Failed to fetch profile for onboarding check'
-      );
+      const err = new Error(error.message || 'Failed to fetch profile for onboarding check');
       Sentry.captureException(err, {
         tags: { code: 'ONBOARDING_CHECK_FAILED' },
         extra: {

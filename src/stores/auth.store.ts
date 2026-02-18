@@ -77,13 +77,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             setTimeout(() => reject(new Error('Onboarding check timeout')), 10000)
           );
 
-          const { hasCompletedOnboarding } = await import('@/services/onboarding/onboarding.service');
+          const { hasCompletedOnboarding } =
+            await import('@/services/onboarding/onboarding.service');
           const { useOnboardingStore } = await import('@/stores/onboarding.store');
 
-          const completed = await Promise.race([
+          const completed = (await Promise.race([
             hasCompletedOnboarding(session.user.id),
-            timeoutPromise
-          ]) as boolean;
+            timeoutPromise,
+          ])) as boolean;
 
           console.log('[AuthStore] Onboarding check result:', completed);
           if (completed) {
