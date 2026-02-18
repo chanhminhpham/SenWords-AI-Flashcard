@@ -9,13 +9,23 @@ jest.mock('@/theme', () => ({
       primary: '#2D8A5E',
       onBackground: '#1A1D23',
       onSurfaceVariant: '#4A4E54',
+      feedback: {
+        know: '#4ECBA0',
+      },
     },
   }),
+}));
+
+jest.mock('@/stores/auth.store', () => ({
+  useAuthStore: jest.fn(() => ({
+    user: { id: 'test-user', email: 'test@example.com' },
+  })),
 }));
 
 import { render } from '@testing-library/react-native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import HomeScreen from '../../../app/(tabs)/home/index';
 import LearnScreen from '../../../app/(tabs)/learn/index';
@@ -29,12 +39,22 @@ const safeAreaMetrics = {
 };
 
 function renderScreen(Screen: React.ComponentType) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
   return render(
-    <SafeAreaProvider initialMetrics={safeAreaMetrics}>
-      <PaperProvider>
-        <Screen />
-      </PaperProvider>
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider initialMetrics={safeAreaMetrics}>
+        <PaperProvider>
+          <Screen />
+        </PaperProvider>
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -45,9 +65,12 @@ describe('Placeholder tab screens', () => {
     expect(getByText('Đang phát triển...')).toBeTruthy();
   });
 
-  it('renders Learn screen with title', () => {
-    const { getByText } = renderScreen(LearnScreen);
-    expect(getByText('Từ vựng')).toBeTruthy();
+  it('renders Learn screen with empty state (no SR queue)', async () => {
+    const { findByText } = renderScreen(LearnScreen);
+    // Since fetchSRQueue returns empty array, should show empty state
+    // i18n mock returns keys, not translations
+    const emptyText = await findByText('learn.empty');
+    expect(emptyText).toBeTruthy();
   });
 
   it('renders Scan screen with title', () => {

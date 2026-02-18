@@ -108,8 +108,19 @@
       "actionLabel": "Undo"
     }
   },
+  "learn": {
+    "loading": "Loading...",
+    "empty": "All done! 🌿",
+    "emptySubtitle": "Take a break, see you later",
+    "counter": "{{current}}/{{total}} words today",
+    "encouragement": {
+      "left": "See you soon!",
+      "right": "Great job! ✨"
+    }
+  },
   "accessibility": {
     "swipeRight": "Swipe right if you know this word",
+    "swipeCardHint": "Swipe right if you know, left if you don't",
     "undoAction": "Undo swipe action",
     "tutorialCard": "Swipe tutorial card — swipe left or right to practice",
     "lotusAnimation": "Lotus flower — result animation",

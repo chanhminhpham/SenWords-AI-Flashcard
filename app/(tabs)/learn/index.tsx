@@ -1,29 +1,198 @@
-import { View } from 'react-native';
+// Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6)
+import { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { Text } from 'react-native-paper';
 
-import { useAppTheme } from '@/theme';
+import { useTranslation } from 'react-i18next';
 
-// Expo Router requires default export for route files
+import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
+import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
+import { useAuthStore } from '@/stores/auth.store';
+import { useLearningEngine } from '@/stores/learning-engine.store';
+import { useAppTheme } from '@/theme';
+import type { VocabularyCard } from '@/types/vocabulary';
+
+import { adjustSchedule, logLearningEvent } from '@/services/sr/sr.service';
+
+/**
+ * Fetch SR queue from SQLite (placeholder — will be replaced with actual query in Story 1.7).
+ * For now, returns empty array to demonstrate UI flow.
+ */
+async function fetchSRQueue(userId: string): Promise<VocabularyCard[]> {
+  // Placeholder: Story 1.7 will implement actual SR queue fetching
+  // For now, return empty array to allow testing UI without database
+  console.log('Fetching SR queue for user:', userId);
+  return [];
+}
+
+/**
+ * Learn Screen — Core flashcard swipe interaction.
+ *
+ * Features:
+ * - Load SR queue from SQLite (pre-cached, offline-first)
+ * - Display flashcards in stack (2 visible, 3rd lazy-loaded)
+ * - Swipe right (know) / left (don't know) gesture handling
+ * - Undo functionality (3-second window)
+ * - Empty state when queue exhausted
+ * - Progress counter: "N/N từ hôm nay"
+ */
 export default function LearnScreen() {
   const theme = useAppTheme();
+  const { t } = useTranslation();
+  const currentUser = useAuthStore((s) => s.user);
+
+  const [showUndo, setShowUndo] = useState(false);
+  const [prefetchedImages, setPrefetchedImages] = useState<Set<number>>(new Set());
+
+  const { loadQueue, recordSwipe, undoLastSwipe, getCurrentCard, getQueueProgress, undoBuffer } =
+    useLearningEngine();
+
+  // Fetch SR queue from SQLite
+  const { data: srQueue, isLoading } = useQuery({
+    queryKey: ['learning', 'queue', currentUser?.id],
+    queryFn: () => fetchSRQueue(currentUser?.id ?? ''),
+    enabled: !!currentUser?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Load queue into store when data arrives
+  useEffect(() => {
+    if (srQueue && srQueue.length > 0) {
+      loadQueue(srQueue);
+
+      // Prefetch first 3 card images (if they have images)
+      const imagesToPrefetch = srQueue.slice(0, 3).filter((card) => card.exampleSentence);
+      imagesToPrefetch.forEach((card) => {
+        if (card.exampleSentence && !prefetchedImages.has(card.id)) {
+          // Placeholder: In real app, cards would have image URLs
+          setPrefetchedImages((prev) => new Set(prev).add(card.id));
+        }
+      });
+    }
+  }, [srQueue, loadQueue, prefetchedImages]);
+
+  const currentCard = getCurrentCard();
+  const { current, total } = getQueueProgress();
+
+  // Handle swipe action
+  const handleSwipe = useCallback(
+    async (cardId: number, direction: 'left' | 'right' | 'up') => {
+      if (!currentUser?.id) return;
+
+      // Record swipe in store (advances to next card, sets undo buffer)
+      recordSwipe(cardId, direction);
+
+      // Log event to SQLite
+      await logLearningEvent(cardId, currentUser.id, direction);
+
+      // Adjust SR schedule (Story 1.6 placeholder logic)
+      if (direction !== 'up') {
+        await adjustSchedule({
+          cardId,
+          userId: currentUser.id,
+          response: direction === 'right' ? 'know' : 'dontKnow',
+        });
+      }
+
+      // Show undo snackbar
+      setShowUndo(true);
+    },
+    [currentUser, recordSwipe]
+  );
+
+  // Handle undo
+  const handleUndo = useCallback(async () => {
+    if (!undoBuffer || !currentUser?.id) return;
+
+    undoLastSwipe();
+    setShowUndo(false);
+
+    // Revert event in SQLite (placeholder — Story 1.7 will implement proper undo)
+    console.log('Undo swipe:', undoBuffer);
+  }, [undoBuffer, undoLastSwipe, currentUser]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+          {t('learn.loading', 'Đang tải...')}
+        </Text>
+      </View>
+    );
+  }
+
+  // Empty state — no cards to review
+  if (!currentCard) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <MaterialCommunityIcons
+          name="check-circle-outline"
+          size={64}
+          color={theme.colors.feedback.know}
+        />
+        <Text
+          variant="headlineSmall"
+          style={{ marginTop: 16, color: theme.colors.onBackground, textAlign: 'center' }}>
+          {t('learn.empty', 'Bạn đã ôn hết! 🌿')}
+        </Text>
+        <Text
+          variant="bodyMedium"
+          style={{
+            marginTop: 8,
+            color: theme.colors.onSurfaceVariant,
+            textAlign: 'center',
+            paddingHorizontal: 32,
+          }}>
+          {t('learn.emptySubtitle', 'Nghỉ ngơi, gặp lại sau')}
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View
-      className="flex-1 items-center justify-center"
-      style={{ backgroundColor: theme.colors.background }}>
-      <MaterialCommunityIcons
-        name="book-open-page-variant"
-        size={48}
-        color={theme.colors.primary}
-      />
-      <Text variant="headlineSmall" style={{ marginTop: 16, color: theme.colors.onBackground }}>
-        Từ vựng
-      </Text>
-      <Text variant="bodyMedium" style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}>
-        Đang phát triển...
-      </Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {/* Progress counter */}
+      <View style={styles.counterContainer}>
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+          {t('learn.counter', '{{current}}/{{total}} từ hôm nay', { current, total })}
+        </Text>
+      </View>
+
+      {/* Flashcard stack (currently showing 1 card, will add stack rendering in refactor) */}
+      <View style={styles.cardContainer}>
+        <BaseSwipeCard
+          card={currentCard}
+          variant="learning"
+          onSwipe={handleSwipe}
+          allowSwipeUp={false} // Beginner level: swipe up disabled
+        />
+      </View>
+
+      {/* Undo snackbar */}
+      <UndoSnackbar visible={showUndo} onDismiss={() => setShowUndo(false)} onUndo={handleUndo} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  counterContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+  },
+  cardContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

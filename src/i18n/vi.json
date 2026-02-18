@@ -108,8 +108,19 @@
       "actionLabel": "Hoàn tác"
     }
   },
+  "learn": {
+    "loading": "Đang tải...",
+    "empty": "Bạn đã ôn hết! 🌿",
+    "emptySubtitle": "Nghỉ ngơi, gặp lại sau",
+    "counter": "{{current}}/{{total}} từ hôm nay",
+    "encouragement": {
+      "left": "Gặp lại sớm!",
+      "right": "Tuyệt vời! ✨"
+    }
+  },
   "accessibility": {
     "swipeRight": "Vuốt phải nếu biết từ này",
+    "swipeCardHint": "Vuốt phải nếu biết, trái nếu chưa biết",
     "undoAction": "Hoàn tác thao tác vuốt",
     "tutorialCard": "Thẻ hướng dẫn vuốt — vuốt trái hoặc phải để thực hành",
     "lotusAnimation": "Hình hoa sen — hiệu ứng kết quả",
