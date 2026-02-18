@@ -64,8 +64,7 @@ export function BaseSwipeCard({
   const [isComplete, setIsComplete] = useState(false);
 
   const reduceMotion = useAppStore((s) => s.shouldReduceMotion());
-  // Device tier available for future enhancements (budget vs standard animations)
-  // const deviceTier = useAppStore((s) => s.deviceTier);
+  const deviceTier = useAppStore((s) => s.deviceTier);
   const theme = useAppTheme();
   const { t } = useTranslation();
 
@@ -122,12 +121,25 @@ export function BaseSwipeCard({
       }
 
       // Bounce back to center
-      translateX.value = reduceMotion ? 0 : withSpring(0, { damping: 20 });
-      translateY.value = reduceMotion ? 0 : withSpring(0, { damping: 20 });
+      // Budget devices: use timing instead of spring for performance
+      if (reduceMotion) {
+        translateX.value = 0;
+        translateY.value = 0;
+      } else if (deviceTier === 'budget') {
+        translateX.value = withTiming(0, { duration: 150 });
+        translateY.value = withTiming(0, { duration: 150 });
+      } else {
+        translateX.value = withSpring(0, { damping: 20 });
+        translateY.value = withSpring(0, { damping: 20 });
+      }
     });
 
   const animatedCardStyle = useAnimatedStyle(() => {
-    const rotation = interpolate(translateX.value, [-SCREEN_WIDTH, 0, SCREEN_WIDTH], [-15, 0, 15]);
+    // Budget devices: no rotation, only translate
+    const rotation =
+      deviceTier === 'budget'
+        ? 0
+        : interpolate(translateX.value, [-SCREEN_WIDTH, 0, SCREEN_WIDTH], [-15, 0, 15]);
 
     return {
       transform: [
@@ -210,6 +222,7 @@ export function BaseSwipeCard({
         <View style={styles.content}>
           {/* KnowledgeDot */}
           <View style={styles.dotContainer}>
+            {/* TODO Story 1.7: Derive state from card.masteryLevel or SR schedule accuracy */}
             <KnowledgeDot state="empty" size={8} />
           </View>
 

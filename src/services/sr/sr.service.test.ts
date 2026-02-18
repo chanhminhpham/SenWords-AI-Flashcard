@@ -7,7 +7,7 @@ const mockDb = {
   where: jest.fn().mockReturnThis(),
   limit: jest.fn().mockResolvedValue([]),
   insert: jest.fn().mockReturnThis(),
-  values: jest.fn().mockResolvedValue(undefined),
+  values: jest.fn().mockResolvedValue({ lastInsertRowid: 1 }),
   update: jest.fn().mockReturnThis(),
   set: jest.fn().mockReturnThis(),
 };
@@ -80,10 +80,27 @@ describe('SR Service', () => {
       expect(diff).toBeLessThan(dayInMs * 1.01);
     });
 
-    it('handles errors gracefully', async () => {
-      // Test will verify error handling through mock implementation
-      // (Dynamic imports not supported in Jest without special flags)
-      expect(true).toBe(true);
+    it('handles errors gracefully when database fails', async () => {
+      // Simulate database error by making insert throw
+      const originalInsert = mockDb.insert;
+      mockDb.insert = jest.fn().mockImplementationOnce(() => {
+        throw new Error('Database connection failed');
+      });
+
+      const params = {
+        cardId: 999,
+        userId: 'user-1',
+        response: 'know' as const,
+      };
+
+      const result = await adjustSchedule(params);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Database connection failed');
+      expect(result.nextReviewAt).toBeUndefined();
+
+      // Restore mock
+      mockDb.insert = originalInsert;
     });
   });
 
@@ -103,10 +120,20 @@ describe('SR Service', () => {
       expect(true).toBe(true);
     });
 
-    it('handles logging errors', async () => {
-      // Test will verify error handling through mock implementation
-      // (Dynamic imports not supported in Jest without special flags)
-      expect(true).toBe(true);
+    it('handles logging errors when database fails', async () => {
+      // Simulate database error
+      const originalInsert = mockDb.insert;
+      mockDb.insert = jest.fn().mockImplementationOnce(() => {
+        throw new Error('Failed to write to learning_events table');
+      });
+
+      const result = await logLearningEvent(5, 'user-1', 'right');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to write to learning_events table');
+
+      // Restore mock
+      mockDb.insert = originalInsert;
     });
   });
 });

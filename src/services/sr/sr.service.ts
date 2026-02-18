@@ -97,10 +97,10 @@ export async function logLearningEvent(
   cardId: number,
   userId: string,
   direction: 'left' | 'right' | 'up'
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; eventId?: number; error?: string }> {
   try {
     const db = getDb();
-    await db.insert(learningEvents).values({
+    const result = await db.insert(learningEvents).values({
       userId,
       cardId,
       eventType: 'CARD_REVIEWED',
@@ -111,11 +111,60 @@ export async function logLearningEvent(
       createdAt: new Date().toISOString(),
     });
 
-    return { success: true };
+    // Return event ID for potential undo (Drizzle returns lastInsertRowid)
+    return { success: true, eventId: (result as any).lastInsertRowid };
   } catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'EVENT_LOG_FAILED',
+    };
+  }
+}
+
+/**
+ * Revert last SR schedule adjustment (for undo functionality).
+ * Decrements reviewCount and reverts nextReviewAt to previous value.
+ *
+ * NOTE: This is a simplified undo - full history tracking in Story 1.7
+ *
+ * @param cardId - Card ID to revert
+ * @param userId - User ID
+ */
+export async function revertScheduleAdjustment(
+  cardId: number,
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDb();
+
+    // Get current schedule
+    const existing = await db
+      .select()
+      .from(srSchedule)
+      .where(eq(srSchedule.cardId, cardId))
+      .limit(1);
+
+    if (existing.length === 0) {
+      return { success: false, error: 'NO_SCHEDULE_TO_REVERT' };
+    }
+
+    const schedule = existing[0];
+
+    // Revert: decrement reviewCount, reset nextReviewAt to "now"
+    await db
+      .update(srSchedule)
+      .set({
+        reviewCount: Math.max(0, schedule.reviewCount - 1),
+        nextReviewAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(srSchedule.cardId, cardId));
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'REVERT_SCHEDULE_FAILED',
     };
   }
 }

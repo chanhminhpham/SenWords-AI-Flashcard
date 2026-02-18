@@ -15,7 +15,11 @@ import { useLearningEngine } from '@/stores/learning-engine.store';
 import { useAppTheme } from '@/theme';
 import type { VocabularyCard } from '@/types/vocabulary';
 
-import { adjustSchedule, logLearningEvent } from '@/services/sr/sr.service';
+import {
+  adjustSchedule,
+  logLearningEvent,
+  revertScheduleAdjustment,
+} from '@/services/sr/sr.service';
 
 /**
  * Fetch SR queue from SQLite (placeholder — will be replaced with actual query in Story 1.7).
@@ -82,23 +86,38 @@ export default function LearnScreen() {
     async (cardId: number, direction: 'left' | 'right' | 'up') => {
       if (!currentUser?.id) return;
 
-      // Record swipe in store (advances to next card, sets undo buffer)
-      recordSwipe(cardId, direction);
+      try {
+        // Record swipe in store (advances to next card, sets undo buffer)
+        recordSwipe(cardId, direction);
 
-      // Log event to SQLite
-      await logLearningEvent(cardId, currentUser.id, direction);
+        // Log event to SQLite
+        const eventResult = await logLearningEvent(cardId, currentUser.id, direction);
+        if (!eventResult.success) {
+          console.error('[Learn] Failed to log event:', eventResult.error);
+          // Continue anyway - event logging failure shouldn't block learning
+        }
 
-      // Adjust SR schedule (Story 1.6 placeholder logic)
-      if (direction !== 'up') {
-        await adjustSchedule({
-          cardId,
-          userId: currentUser.id,
-          response: direction === 'right' ? 'know' : 'dontKnow',
-        });
+        // Adjust SR schedule (Story 1.6 placeholder logic)
+        if (direction !== 'up') {
+          const scheduleResult = await adjustSchedule({
+            cardId,
+            userId: currentUser.id,
+            response: direction === 'right' ? 'know' : 'dontKnow',
+          });
+
+          if (!scheduleResult.success) {
+            console.error('[Learn] Failed to adjust schedule:', scheduleResult.error);
+            // Continue anyway - schedule failure shouldn't block learning
+          }
+        }
+
+        // Show undo snackbar
+        setShowUndo(true);
+      } catch (error) {
+        console.error('[Learn] Unexpected error in handleSwipe:', error);
+        // Show undo anyway - user can still undo UI state
+        setShowUndo(true);
       }
-
-      // Show undo snackbar
-      setShowUndo(true);
     },
     [currentUser, recordSwipe]
   );
@@ -107,11 +126,26 @@ export default function LearnScreen() {
   const handleUndo = useCallback(async () => {
     if (!undoBuffer || !currentUser?.id) return;
 
-    undoLastSwipe();
-    setShowUndo(false);
+    try {
+      // Revert UI state first (immediate feedback)
+      undoLastSwipe();
+      setShowUndo(false);
 
-    // Revert event in SQLite (placeholder — Story 1.7 will implement proper undo)
-    console.log('Undo swipe:', undoBuffer);
+      // Revert SR schedule adjustment in database
+      if (undoBuffer.direction !== 'up') {
+        const revertResult = await revertScheduleAdjustment(undoBuffer.cardId, currentUser.id);
+
+        if (!revertResult.success) {
+          console.error('[Learn] Failed to revert schedule:', revertResult.error);
+        }
+      }
+
+      // NOTE: learningEvents are immutable for audit trail
+      // We don't delete CARD_REVIEWED events, only revert the SR schedule
+      // Full undo history tracking will be implemented in Story 1.7
+    } catch (error) {
+      console.error('[Learn] Unexpected error in handleUndo:', error);
+    }
   }, [undoBuffer, undoLastSwipe, currentUser]);
 
   // Loading state
