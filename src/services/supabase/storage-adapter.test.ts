@@ -21,7 +21,12 @@ describe('SupabaseStorageAdapter', () => {
 
       await SupabaseStorageAdapter.setItem('key', 'value');
 
-      expect(consoleSpy).toHaveBeenCalledWith('[StorageAdapter] Setting item:', 'key', 'length:', 5);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[StorageAdapter] Setting item:',
+        'key',
+        'length:',
+        5
+      );
       expect(consoleSpy).toHaveBeenCalledWith('[StorageAdapter] Successfully stored item');
 
       consoleSpy.mockRestore();
