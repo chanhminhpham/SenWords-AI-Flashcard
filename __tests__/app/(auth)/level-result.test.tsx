@@ -111,7 +111,7 @@ describe('LevelResultScreen', () => {
     fireEvent.press(screen.getByTestId('start-button'));
 
     await waitFor(() => {
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)');
+      expect(router.replace).toHaveBeenCalledWith('/(tabs)/home');
     });
     expect(useOnboardingStore.getState().onboardingCompleted).toBe(true);
   });
