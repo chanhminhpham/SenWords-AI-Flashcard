@@ -98,7 +98,9 @@ describe('Auth Service', () => {
         url: 'ai-flash-card://redirect', // No access_token in hash
       } as WebBrowser.WebBrowserAuthSessionResult);
 
-      await expect(signInWithProvider('facebook', ageVerification)).rejects.toThrow('AUTH_NO_TOKEN');
+      await expect(signInWithProvider('facebook', ageVerification)).rejects.toThrow(
+        'AUTH_NO_TOKEN'
+      );
     });
 
     it('saves age verification data to profile after SSO success', async () => {
