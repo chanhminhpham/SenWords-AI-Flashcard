@@ -5,8 +5,11 @@ import { BaseSwipeCard } from './BaseSwipeCard';
 import type { VocabularyCard } from '@/types/vocabulary';
 
 // Mock dependencies (NativeWind v4 limitation: external mock files required)
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- NativeWind v4 limitation: external mock files required
 jest.mock('react-native-reanimated', () => require('@/__test-utils__/reanimated-mock'));
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- NativeWind v4 limitation: external mock files required
 jest.mock('react-native-gesture-handler', () => require('@/__test-utils__/gesture-handler-mock'));
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- NativeWind v4 limitation: external mock files required
 jest.mock('@/theme/use-app-theme', () => require('@/__test-utils__/theme-mock'));
 jest.mock('@/services/haptics', () => ({
   hapticSwipeComplete: jest.fn(),

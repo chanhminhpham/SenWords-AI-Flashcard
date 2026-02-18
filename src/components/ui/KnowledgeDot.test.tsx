@@ -3,6 +3,7 @@ import { render } from '@testing-library/react-native';
 import { KnowledgeDot } from './KnowledgeDot';
 
 // Mock theme
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- NativeWind v4 limitation: external mock files required
 jest.mock('@/theme/use-app-theme', () => require('@/__test-utils__/theme-mock'));
 
 describe('KnowledgeDot', () => {
