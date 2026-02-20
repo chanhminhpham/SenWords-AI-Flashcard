@@ -1,6 +1,6 @@
 // SR Scheduling Service — SM-2 Spaced Repetition (Story 1.7)
 import { getDb, runInTransaction } from '@/db';
-import { learningEvents, srSchedule, vocabularyCards } from '@/db/local-schema';
+import { learningEvents, srSchedule, userPreferences, vocabularyCards } from '@/db/local-schema';
 import { and, asc, eq, inArray, lte, notInArray } from 'drizzle-orm';
 
 import {
@@ -15,6 +15,7 @@ import type { VocabularyCard } from '@/types/vocabulary';
 // Daily volume constants (AC6)
 // ---------------------------------------------------------------------------
 export const MAX_NEW_CARDS_PER_DAY = 15;
+export const MAX_NEW_CARDS_ADVANCED = 10;
 export const MAX_DAILY_QUEUE = 75;
 export const BURNOUT_WARNING_THRESHOLD = 80;
 export const SECONDS_PER_CARD = 8;
@@ -38,6 +39,8 @@ export interface ScheduleResult {
   success: boolean;
   nextReviewAt?: string;
   previousState?: ScheduleSnapshot;
+  /** True when the review created a new sr_schedule row (first review). */
+  isFirstReview?: boolean;
   error?: string;
 }
 
@@ -53,6 +56,8 @@ export function adjustSchedule(params: AdjustScheduleParams): ScheduleResult {
     const { cardId, userId, response } = params;
     const db = getDb();
     const quality = QUALITY_MAPPING[response];
+    // NOTE (F5): All dates stored/compared as UTC ISO 8601 via .toISOString()
+    // which always produces the 'Z' suffix — safe for lexicographic comparison.
     const now = new Date().toISOString();
 
     // Read existing schedule (filter by both cardId AND userId)
@@ -132,6 +137,8 @@ export function adjustSchedule(params: AdjustScheduleParams): ScheduleResult {
             .run();
         }
       });
+
+      return { success: true, nextReviewAt, previousState, isFirstReview: false };
     } else {
       // First review — create initial schedule
       const sm2Result = calculateNextReview({
@@ -159,9 +166,9 @@ export function adjustSchedule(params: AdjustScheduleParams): ScheduleResult {
           })
           .run();
       });
-    }
 
-    return { success: true, nextReviewAt, previousState };
+      return { success: true, nextReviewAt, previousState: undefined, isFirstReview: true };
+    }
   } catch (error) {
     return {
       success: false,
@@ -173,20 +180,19 @@ export function adjustSchedule(params: AdjustScheduleParams): ScheduleResult {
 /**
  * Log learning event to SQLite (CARD_REVIEWED).
  * Includes quality rating in payload per AC1/AC2.
+ *
+ * NOTE: Swipe-up direction should NOT call this function — swipe-up is a
+ * "peek/explore" gesture, not a review action. The Learn screen skips logging
+ * for 'up' direction. (F9)
  */
 export function logLearningEvent(
   cardId: number,
   userId: string,
-  direction: 'left' | 'right' | 'up'
+  direction: 'left' | 'right'
 ): { success: boolean; eventId?: number; error?: string } {
   try {
     const db = getDb();
-    const quality =
-      direction === 'right'
-        ? QUALITY_MAPPING.know
-        : direction === 'left'
-          ? QUALITY_MAPPING.dontKnow
-          : 0;
+    const quality = direction === 'right' ? QUALITY_MAPPING.know : QUALITY_MAPPING.dontKnow;
 
     const result = db
       .insert(learningEvents)
@@ -203,7 +209,9 @@ export function logLearningEvent(
       })
       .run();
 
-    return { success: true, eventId: (result as any).lastInsertRowid };
+    // F6: Drizzle's expo-sqlite .run() returns { changes, lastInsertRowid }
+    const runResult = result as unknown as { lastInsertRowid?: number };
+    return { success: true, eventId: runResult.lastInsertRowid };
   } catch (error) {
     return {
       success: false,
@@ -213,15 +221,43 @@ export function logLearningEvent(
 }
 
 /**
+ * Log a compensating CARD_REVIEW_REVERTED event when the user undoes a swipe.
+ * Keeps the learning_events table append-only while marking the original
+ * CARD_REVIEWED event as logically reverted. (F2)
+ */
+export function logUndoEvent(cardId: number, userId: string): { success: boolean; error?: string } {
+  try {
+    const db = getDb();
+    db.insert(learningEvents)
+      .values({
+        userId,
+        cardId,
+        eventType: 'CARD_REVIEW_REVERTED',
+        payload: { timestamp: Date.now() },
+        createdAt: new Date().toISOString(),
+      })
+      .run();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'UNDO_EVENT_LOG_FAILED',
+    };
+  }
+}
+
+/**
  * Revert last SR schedule adjustment (for undo functionality).
  *
- * If a previous state snapshot is provided (from adjustSchedule result),
- * restores the exact SM-2 state. Otherwise falls back to simple revert.
+ * - If `previousState` is provided → restores the exact SM-2 state (UPDATE).
+ * - If `previousState` is undefined AND card was a first review → DELETE the row (F3).
+ * - Otherwise → simple fallback (decrement reviewCount).
  */
 export function revertScheduleAdjustment(
   cardId: number,
   userId: string,
-  previousState?: ScheduleSnapshot
+  previousState?: ScheduleSnapshot,
+  isFirstReview?: boolean
 ): { success: boolean; error?: string } {
   try {
     const db = getDb();
@@ -239,7 +275,12 @@ export function revertScheduleAdjustment(
     const now = new Date().toISOString();
 
     runInTransaction(() => {
-      if (previousState) {
+      if (isFirstReview) {
+        // F3: First review created this row — DELETE it to fully undo
+        db.delete(srSchedule)
+          .where(and(eq(srSchedule.cardId, cardId), eq(srSchedule.userId, userId)))
+          .run();
+      } else if (previousState) {
         // Full SM-2 state restoration from snapshot
         db.update(srSchedule)
           .set({
@@ -289,10 +330,36 @@ export interface SRQueueResult {
 }
 
 /**
+ * Determine new-card-per-day cap based on user level. (F7 / AC6)
+ * Intermediate+ (level ≥ 2) → 10, Beginner/Pre-intermediate → 15.
+ */
+function getNewCardCap(db: ReturnType<typeof getDb>, userId: string): number {
+  const prefs = db
+    .select({ level: userPreferences.level })
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId))
+    .all();
+
+  const userLevel = prefs.length > 0 ? (prefs[0].level ?? 0) : 0;
+  return userLevel >= 2 ? MAX_NEW_CARDS_ADVANCED : MAX_NEW_CARDS_PER_DAY;
+}
+
+/**
  * Build the SR review queue for a user.
  *
  * Priority order: overdue cards first (most overdue → least), then new cards.
- * New cards fill the gap up to MAX_NEW_CARDS_PER_DAY, total capped at MAX_DAILY_QUEUE.
+ * New cards fill the gap up to the user's new-card cap (AC6),
+ * total capped at MAX_DAILY_QUEUE.
+ *
+ * NOTE (AC7 design choice / F8): New cards do NOT get a pre-created sr_schedule
+ * row when entering the queue. The initial sr_schedule entry is created on first
+ * review (inside adjustSchedule). This avoids creating orphaned rows for cards
+ * the user never actually reviews in a session.
+ *
+ * NOTE (F12 / query optimization): The current approach uses 3-4 separate queries.
+ * A single JOIN would be more efficient at scale, but for a mobile SQLite DB with
+ * <5000 cards, the current approach is readable and fast enough. The compound
+ * index on (userId, nextReviewAt) ensures the primary query is indexed.
  */
 export function fetchSRQueue(userId: string): SRQueueResult {
   const db = getDb();
@@ -326,9 +393,10 @@ export function fetchSRQueue(userId: string): SRQueueResult {
     dueCards.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
   }
 
-  // Step 3: Calculate new card slots
+  // Step 3: Calculate new card slots (F7: level-aware cap)
+  const maxNewCards = getNewCardCap(db, userId);
   const remainingTotalSlots = Math.max(0, MAX_DAILY_QUEUE - dueCards.length);
-  const newCardLimit = Math.min(MAX_NEW_CARDS_PER_DAY, remainingTotalSlots);
+  const newCardLimit = Math.min(maxNewCards, remainingTotalSlots);
 
   // Step 4: Fetch new cards (never reviewed by this user)
   let newCards: VocabularyCard[] = [];

@@ -1,5 +1,5 @@
 // Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6 → 1.7)
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ import { useAppTheme } from '@/theme';
 import {
   adjustSchedule,
   logLearningEvent,
+  logUndoEvent,
   revertScheduleAdjustment,
   fetchSRQueue,
   BURNOUT_WARNING_THRESHOLD,
@@ -40,8 +41,13 @@ export default function LearnScreen() {
   const currentUser = useAuthStore((s) => s.user);
 
   const [showUndo, setShowUndo] = useState(false);
+  // F10: Only the most recent snapshot is stored. The undo buffer in
+  // learning-engine.store enforces single-undo (3-second window, one action),
+  // so multiple rapid swipes safely overwrite this — only the latest is undoable.
   const [lastSnapshot, setLastSnapshot] = useState<ScheduleSnapshot | undefined>();
-  const [prefetchedImages, setPrefetchedImages] = useState<Set<number>>(new Set());
+  const [lastIsFirstReview, setLastIsFirstReview] = useState(false);
+  // F1: Use ref instead of state to avoid infinite re-render loop
+  const prefetchedRef = useRef<Set<number>>(new Set());
 
   const { loadQueue, recordSwipe, undoLastSwipe, getCurrentCard, getQueueProgress, undoBuffer } =
     useLearningEngine();
@@ -60,16 +66,13 @@ export default function LearnScreen() {
       loadQueue(srQueueResult.cards);
 
       // Prefetch first 3 card images (if they have images)
-      const imagesToPrefetch = srQueueResult.cards
-        .slice(0, 3)
-        .filter((card) => card.exampleSentence);
-      imagesToPrefetch.forEach((card) => {
-        if (card.exampleSentence && !prefetchedImages.has(card.id)) {
-          setPrefetchedImages((prev) => new Set(prev).add(card.id));
+      srQueueResult.cards.slice(0, 3).forEach((card) => {
+        if (card.exampleSentence && !prefetchedRef.current.has(card.id)) {
+          prefetchedRef.current.add(card.id);
         }
       });
     }
-  }, [srQueueResult, loadQueue, prefetchedImages]);
+  }, [srQueueResult, loadQueue]);
 
   const currentCard = getCurrentCard();
   const { current, total } = getQueueProgress();
@@ -83,14 +86,16 @@ export default function LearnScreen() {
         // Record swipe in store (advances to next card, sets undo buffer)
         recordSwipe(cardId, direction);
 
-        // Log event to SQLite
-        const eventResult = logLearningEvent(cardId, currentUser.id, direction);
-        if (!eventResult.success) {
-          console.error('[Learn] Failed to log event:', eventResult.error);
-        }
+        // F9: Only log CARD_REVIEWED events for left/right (actual reviews).
+        // Swipe-up is a peek/explore gesture — not a review action.
+        if (direction === 'left' || direction === 'right') {
+          // Log event to SQLite
+          const eventResult = logLearningEvent(cardId, currentUser.id, direction);
+          if (!eventResult.success) {
+            console.error('[Learn] Failed to log event:', eventResult.error);
+          }
 
-        // Adjust SR schedule via SM-2 algorithm
-        if (direction !== 'up') {
+          // Adjust SR schedule via SM-2 algorithm
           const scheduleResult = adjustSchedule({
             cardId,
             userId: currentUser.id,
@@ -100,6 +105,7 @@ export default function LearnScreen() {
           if (scheduleResult.success) {
             // Store snapshot for undo
             setLastSnapshot(scheduleResult.previousState);
+            setLastIsFirstReview(scheduleResult.isFirstReview ?? false);
           } else {
             console.error('[Learn] Failed to adjust schedule:', scheduleResult.error);
           }
@@ -124,24 +130,29 @@ export default function LearnScreen() {
       undoLastSwipe();
       setShowUndo(false);
 
-      // Revert SR schedule adjustment in database (with full SM-2 snapshot)
+      // Revert SR schedule + log compensating event (F2)
       if (undoBuffer.direction !== 'up') {
         const revertResult = revertScheduleAdjustment(
           undoBuffer.cardId,
           currentUser.id,
-          lastSnapshot
+          lastSnapshot,
+          lastIsFirstReview
         );
 
         if (!revertResult.success) {
           console.error('[Learn] Failed to revert schedule:', revertResult.error);
         }
+
+        // F2: Log compensating event to keep learning_events consistent
+        logUndoEvent(undoBuffer.cardId, currentUser.id);
       }
 
       setLastSnapshot(undefined);
+      setLastIsFirstReview(false);
     } catch (error) {
       console.error('[Learn] Unexpected error in handleUndo:', error);
     }
-  }, [undoBuffer, undoLastSwipe, currentUser, lastSnapshot]);
+  }, [undoBuffer, undoLastSwipe, currentUser, lastSnapshot, lastIsFirstReview]);
 
   // Loading state
   if (isLoading) {

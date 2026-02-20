@@ -1,10 +1,12 @@
 import {
   adjustSchedule,
   logLearningEvent,
+  logUndoEvent,
   revertScheduleAdjustment,
   fetchSRQueue,
   getCardDepthLevel,
   MAX_NEW_CARDS_PER_DAY,
+  MAX_NEW_CARDS_ADVANCED,
   MAX_DAILY_QUEUE,
   SECONDS_PER_CARD,
 } from './sr.service';
@@ -22,6 +24,7 @@ const mockDb = {
   run: jest.fn().mockReturnValue({ lastInsertRowid: 1 }),
   update: jest.fn().mockReturnThis(),
   set: jest.fn().mockReturnThis(),
+  delete: jest.fn().mockReturnThis(),
 };
 
 jest.mock('@/db', () => ({
@@ -58,6 +61,10 @@ jest.mock('@/db/local-schema', () => ({
     difficultyLevel: 'difficultyLevel',
     createdAt: 'createdAt',
   },
+  userPreferences: {
+    userId: 'userId',
+    level: 'level',
+  },
 }));
 
 // eslint-disable-next-line import/first -- must import after jest.mock to get mocked module
@@ -76,6 +83,7 @@ function resetMocks() {
   mockDb.values.mockReset().mockReturnThis();
   mockDb.update.mockReset().mockReturnThis();
   mockDb.set.mockReset().mockReturnThis();
+  mockDb.delete.mockReset().mockReturnThis();
 }
 
 beforeEach(resetMocks);
@@ -112,6 +120,7 @@ describe('SR Service', () => {
       expect(result.success).toBe(true);
       expect(result.nextReviewAt).toBeDefined();
       expect(result.previousState).toBeUndefined();
+      expect(result.isFirstReview).toBe(true);
 
       expect(mockDb.insert).toHaveBeenCalled();
       expect(mockDb.values).toHaveBeenCalledWith(
@@ -135,6 +144,7 @@ describe('SR Service', () => {
       });
 
       expect(result.success).toBe(true);
+      expect(result.isFirstReview).toBe(true);
       expect(mockDb.values).toHaveBeenCalledWith(
         expect.objectContaining({
           cardId: 2,
@@ -168,6 +178,7 @@ describe('SR Service', () => {
       });
 
       expect(result.success).toBe(true);
+      expect(result.isFirstReview).toBe(false);
       expect(result.previousState).toEqual({
         interval: 1,
         easeFactor: 2.5,
@@ -306,6 +317,32 @@ describe('SR Service', () => {
     });
   });
 
+  describe('logUndoEvent (F2)', () => {
+    it('logs CARD_REVIEW_REVERTED event', () => {
+      const result = logUndoEvent(1, 'user-1');
+
+      expect(result.success).toBe(true);
+      expect(mockDb.values).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: 'CARD_REVIEW_REVERTED',
+          cardId: 1,
+          userId: 'user-1',
+        })
+      );
+    });
+
+    it('handles errors gracefully', () => {
+      mockDb.insert.mockImplementationOnce(() => {
+        throw new Error('DB write failed');
+      });
+
+      const result = logUndoEvent(1, 'user-1');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('DB write failed');
+    });
+  });
+
   describe('revertScheduleAdjustment', () => {
     it('restores previous SM-2 state from snapshot', () => {
       mockDb.all.mockReturnValue([
@@ -344,6 +381,29 @@ describe('SR Service', () => {
           depthLevel: 1,
         })
       );
+    });
+
+    it('deletes schedule row for first-review undo (F3)', () => {
+      mockDb.all.mockReturnValue([
+        {
+          id: 10,
+          cardId: 1,
+          userId: 'user-1',
+          interval: 1,
+          easeFactor: 2.5,
+          nextReviewAt: '2026-02-20T00:00:00.000Z',
+          reviewCount: 1,
+          accuracy: 1.0,
+          depthLevel: 1,
+        },
+      ]);
+
+      const result = revertScheduleAdjustment(1, 'user-1', undefined, true);
+
+      expect(result.success).toBe(true);
+      expect(mockDb.delete).toHaveBeenCalled();
+      // Should NOT call update
+      expect(mockDb.set).not.toHaveBeenCalled();
     });
 
     it('falls back to simple revert without snapshot', () => {
@@ -403,17 +463,19 @@ describe('SR Service', () => {
     });
 
     it('returns due cards sorted by overdue priority', () => {
-      // Call 1: due schedules (sorted by nextReviewAt ASC)
       mockDb.all
+        // Call 1: due schedules (sorted by nextReviewAt ASC)
         .mockReturnValueOnce([
           { cardId: 2, nextReviewAt: '2026-02-18T00:00:00Z', userId: 'user-1' },
           { cardId: 5, nextReviewAt: '2026-02-19T00:00:00Z', userId: 'user-1' },
         ])
         // Call 2: vocabulary cards for due cardIds
         .mockReturnValueOnce([mockCard(5, 'world'), mockCard(2, 'hello')])
-        // Call 3: all reviewed IDs (for new card exclusion)
+        // Call 3: user prefs (for dynamic cap)
+        .mockReturnValueOnce([])
+        // Call 4: all reviewed IDs (for new card exclusion)
         .mockReturnValueOnce([{ cardId: 2 }, { cardId: 5 }])
-        // Call 4: new cards
+        // Call 5: new cards
         .mockReturnValueOnce([mockCard(10, 'new-word')]);
 
       const result = fetchSRQueue('user-1');
@@ -425,9 +487,9 @@ describe('SR Service', () => {
     });
 
     it('fills remaining slots with new cards', () => {
-      // No due cards
       mockDb.all
         .mockReturnValueOnce([]) // due schedules: empty
+        .mockReturnValueOnce([]) // user prefs: empty (beginner → 15 cap)
         .mockReturnValueOnce([]) // all reviewed IDs: empty
         .mockReturnValueOnce([mockCard(1, 'apple'), mockCard(2, 'banana')]); // new cards
 
@@ -450,6 +512,7 @@ describe('SR Service', () => {
       mockDb.all
         .mockReturnValueOnce(schedules) // due schedules
         .mockReturnValueOnce(cards) // vocabulary cards
+        .mockReturnValueOnce([]) // user prefs
         .mockReturnValueOnce(schedules.map((s) => ({ cardId: s.cardId }))) // all reviewed
         .mockReturnValueOnce([]); // no new cards left
 
@@ -459,8 +522,12 @@ describe('SR Service', () => {
       expect(result.estimatedMinutes).toBe(Math.ceil((10 * SECONDS_PER_CARD) / 60));
     });
 
-    it('caps new cards at MAX_NEW_CARDS_PER_DAY', () => {
+    it('caps new cards at MAX_NEW_CARDS_PER_DAY for beginners', () => {
       expect(MAX_NEW_CARDS_PER_DAY).toBe(15);
+    });
+
+    it('caps new cards at MAX_NEW_CARDS_ADVANCED for advanced users (F7)', () => {
+      expect(MAX_NEW_CARDS_ADVANCED).toBe(10);
     });
 
     it('caps total queue at MAX_DAILY_QUEUE', () => {
@@ -480,6 +547,7 @@ describe('SR Service', () => {
         .mockReturnValueOnce(
           schedules.slice(0, MAX_DAILY_QUEUE).map((s) => mockCard(s.cardId, `w-${s.cardId}`))
         ) // capped vocabulary
+        .mockReturnValueOnce([]) // user prefs
         .mockReturnValueOnce(schedules.map((s) => ({ cardId: s.cardId }))) // all reviewed
         .mockReturnValueOnce([]); // no new
 

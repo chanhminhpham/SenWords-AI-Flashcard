@@ -91,6 +91,12 @@ export interface DepthInput {
  * Level 2 "Đang học" (Liên kết): 3+ reviews, ease ≥ 2.0, accuracy ≥ 0.6
  * Level 3 "Khá" (Sản xuất): 7+ reviews, ease ≥ 2.2, accuracy ≥ 0.7
  * Level 4 "Thành thạo" (Ứng dụng): 10+ reviews, ease ≥ 2.3, accuracy ≥ 0.8
+ *
+ * NOTE (AC4 simplification): The spec mentions Level 3 requiring a "3-day streak"
+ * and Level 4 requiring "quality ≥ 4 average". Streak tracking requires date-aware
+ * event queries beyond a pure function's scope. Accuracy thresholds (0.7 / 0.8)
+ * serve as a practical proxy — accuracy ≥ 0.8 effectively requires quality ≥ 4
+ * on 80%+ of reviews.
  */
 export function calculateDepthLevel(input: DepthInput): number {
   const { reviewCount, easeFactor, accuracy } = input;
