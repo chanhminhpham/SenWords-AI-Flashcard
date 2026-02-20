@@ -98,6 +98,7 @@ describe('vocabulary Zod schemas', () => {
         nextReviewAt: '2026-02-01 00:00:00',
         reviewCount: 3,
         accuracy: 0.85,
+        depthLevel: 2,
         createdAt: '2026-01-01 00:00:00',
         updatedAt: '2026-01-15 00:00:00',
       };

@@ -66,6 +66,7 @@ export const srSchedule = sqliteTable(
       .default(sql`(datetime('now'))`),
     reviewCount: integer('review_count').notNull().default(0),
     accuracy: real('accuracy').notNull().default(0),
+    depthLevel: integer('depth_level').notNull().default(1),
     createdAt: text('created_at')
       .notNull()
       .default(sql`(datetime('now'))`),

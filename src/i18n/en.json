@@ -116,6 +116,8 @@
     "empty": "All done! 🌿",
     "emptySubtitle": "Take a break, see you later",
     "counter": "{{current}}/{{total}} words today",
+    "queueInfo": "Today you have {{count}} words to review (~{{minutes}} min)",
+    "queueWarning": "You have a lot of words to review today. Focus on the most important ones!",
     "encouragement": {
       "left": "See you soon!",
       "right": "Great job! ✨"

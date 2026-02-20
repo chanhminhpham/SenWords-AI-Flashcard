@@ -53,4 +53,50 @@ describe('KnowledgeDot', () => {
 
     expect(dot).toBeTruthy();
   });
+
+  describe('depthLevel prop (AC5)', () => {
+    it('renders level 1 as empty amber', () => {
+      const { getByTestId } = render(<KnowledgeDot depthLevel={1} />);
+      const dot = getByTestId('knowledge-dot');
+
+      expect(dot.props.accessibilityLabel).toContain('mới');
+      // Empty = border only, no backgroundColor
+      const styles = dot.props.style.flat();
+      const hasBorder = styles.some((s: Record<string, unknown>) => s?.borderWidth === 2);
+      expect(hasBorder).toBe(true);
+    });
+
+    it('renders level 2 as half amber', () => {
+      const { getByTestId } = render(<KnowledgeDot depthLevel={2} />);
+      const dot = getByTestId('knowledge-dot');
+
+      expect(dot.props.accessibilityLabel).toContain('đang học');
+      // Half = filled (has backgroundColor)
+      const styles = dot.props.style.flat();
+      const hasFill = styles.some((s: Record<string, unknown>) => s?.backgroundColor);
+      expect(hasFill).toBe(true);
+    });
+
+    it('renders level 3 as half blue', () => {
+      const { getByTestId } = render(<KnowledgeDot depthLevel={3} />);
+      const dot = getByTestId('knowledge-dot');
+
+      expect(dot.props.accessibilityLabel).toContain('khá');
+    });
+
+    it('renders level 4 as full green', () => {
+      const { getByTestId } = render(<KnowledgeDot depthLevel={4} />);
+      const dot = getByTestId('knowledge-dot');
+
+      expect(dot.props.accessibilityLabel).toContain('thành thạo');
+    });
+
+    it('depthLevel overrides state prop', () => {
+      const { getByTestId } = render(<KnowledgeDot state="full" depthLevel={1} />);
+      const dot = getByTestId('knowledge-dot');
+
+      // depthLevel=1 should show "mới", not "thành thạo" from state="full"
+      expect(dot.props.accessibilityLabel).toContain('mới');
+    });
+  });
 });

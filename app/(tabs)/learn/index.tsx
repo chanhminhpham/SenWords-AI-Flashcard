@@ -1,59 +1,26 @@
-// Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6)
+// Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6 → 1.7)
 import { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Text, Button } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 
 import { useTranslation } from 'react-i18next';
-import { count } from 'drizzle-orm';
 
 import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
 import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
 import { useAuthStore } from '@/stores/auth.store';
 import { useLearningEngine } from '@/stores/learning-engine.store';
 import { useAppTheme } from '@/theme';
-import type { VocabularyCard } from '@/types/vocabulary';
-
 import {
   adjustSchedule,
   logLearningEvent,
   revertScheduleAdjustment,
+  fetchSRQueue,
+  BURNOUT_WARNING_THRESHOLD,
+  type ScheduleSnapshot,
 } from '@/services/sr/sr.service';
-import { getDb } from '@/db';
-import { vocabularyCards } from '@/db/local-schema';
-
-/**
- * Fetch SR queue from SQLite (simple implementation for Story 1.6 testing).
- * Story 1.7 will implement proper SR scheduling logic with nextReviewAt filtering.
- * For now, just fetch first 20 cards by difficulty level for testing swipe UI.
- */
-async function fetchSRQueue(userId: string): Promise<VocabularyCard[]> {
-  console.log('[Learn] Fetching SR queue for user:', userId);
-
-  try {
-    const db = getDb();
-
-    // Simple query: fetch 20 cards, ordered by difficulty (easiest first)
-    // Story 1.7 will replace this with proper SR queue logic:
-    // - JOIN with sr_schedule table
-    // - Filter by nextReviewAt <= now
-    // - Order by priority (overdue first)
-    const cards = db
-      .select()
-      .from(vocabularyCards)
-      .orderBy(vocabularyCards.difficultyLevel)
-      .limit(20)
-      .all();
-
-    console.log('[Learn] Fetched', cards.length, 'cards from database');
-    return cards;
-  } catch (error) {
-    console.error('[Learn] Failed to fetch SR queue:', error);
-    return [];
-  }
-}
 
 /**
  * Learn Screen — Core flashcard swipe interaction.
@@ -63,8 +30,9 @@ async function fetchSRQueue(userId: string): Promise<VocabularyCard[]> {
  * - Display flashcards in stack (2 visible, 3rd lazy-loaded)
  * - Swipe right (know) / left (don't know) gesture handling
  * - Undo functionality (3-second window)
+ * - Queue info: "N từ cần ôn (~X phút)" (AC3)
+ * - Burnout warning when > 80 cards due (AC6)
  * - Empty state when queue exhausted
- * - Progress counter: "N/N từ hôm nay"
  */
 export default function LearnScreen() {
   const theme = useAppTheme();
@@ -72,13 +40,14 @@ export default function LearnScreen() {
   const currentUser = useAuthStore((s) => s.user);
 
   const [showUndo, setShowUndo] = useState(false);
+  const [lastSnapshot, setLastSnapshot] = useState<ScheduleSnapshot | undefined>();
   const [prefetchedImages, setPrefetchedImages] = useState<Set<number>>(new Set());
 
   const { loadQueue, recordSwipe, undoLastSwipe, getCurrentCard, getQueueProgress, undoBuffer } =
     useLearningEngine();
 
-  // Fetch SR queue from SQLite
-  const { data: srQueue, isLoading } = useQuery({
+  // Fetch SR queue from SQLite via real SM-2 queue logic
+  const { data: srQueueResult, isLoading } = useQuery({
     queryKey: ['learning', 'queue', currentUser?.id],
     queryFn: () => fetchSRQueue(currentUser?.id ?? ''),
     enabled: !!currentUser?.id,
@@ -87,47 +56,27 @@ export default function LearnScreen() {
 
   // Load queue into store when data arrives
   useEffect(() => {
-    console.log('[Learn] useEffect - srQueue:', srQueue?.length ?? 0, 'cards');
-    if (srQueue && srQueue.length > 0) {
-      console.log('[Learn] Loading queue with', srQueue.length, 'cards');
-      loadQueue(srQueue);
+    if (srQueueResult && srQueueResult.cards.length > 0) {
+      loadQueue(srQueueResult.cards);
 
       // Prefetch first 3 card images (if they have images)
-      const imagesToPrefetch = srQueue.slice(0, 3).filter((card) => card.exampleSentence);
+      const imagesToPrefetch = srQueueResult.cards
+        .slice(0, 3)
+        .filter((card) => card.exampleSentence);
       imagesToPrefetch.forEach((card) => {
         if (card.exampleSentence && !prefetchedImages.has(card.id)) {
-          // Placeholder: In real app, cards would have image URLs
           setPrefetchedImages((prev) => new Set(prev).add(card.id));
         }
       });
-    } else {
-      console.log('[Learn] No cards in queue - showing empty state');
     }
-  }, [srQueue, loadQueue, prefetchedImages]);
+  }, [srQueueResult, loadQueue, prefetchedImages]);
 
   const currentCard = getCurrentCard();
   const { current, total } = getQueueProgress();
 
-  // DEBUG: Check database state
-  const checkDatabase = useCallback(async () => {
-    try {
-      const db = getDb();
-      const result = db.select({ value: count() }).from(vocabularyCards).all();
-      const totalCards = result[0]?.value ?? 0;
-      console.log('[Learn DEBUG] Total cards in database:', totalCards);
-      Alert.alert(
-        'Database Check',
-        `Total vocabulary cards: ${totalCards}\nQueue size: ${srQueue?.length ?? 0}\nCurrent card: ${currentCard ? 'Yes' : 'No'}`
-      );
-    } catch (error) {
-      console.error('[Learn DEBUG] Database check failed:', error);
-      Alert.alert('Database Error', String(error));
-    }
-  }, [srQueue, currentCard]);
-
   // Handle swipe action
   const handleSwipe = useCallback(
-    async (cardId: number, direction: 'left' | 'right' | 'up') => {
+    (cardId: number, direction: 'left' | 'right' | 'up') => {
       if (!currentUser?.id) return;
 
       try {
@@ -135,23 +84,24 @@ export default function LearnScreen() {
         recordSwipe(cardId, direction);
 
         // Log event to SQLite
-        const eventResult = await logLearningEvent(cardId, currentUser.id, direction);
+        const eventResult = logLearningEvent(cardId, currentUser.id, direction);
         if (!eventResult.success) {
           console.error('[Learn] Failed to log event:', eventResult.error);
-          // Continue anyway - event logging failure shouldn't block learning
         }
 
-        // Adjust SR schedule (Story 1.6 placeholder logic)
+        // Adjust SR schedule via SM-2 algorithm
         if (direction !== 'up') {
-          const scheduleResult = await adjustSchedule({
+          const scheduleResult = adjustSchedule({
             cardId,
             userId: currentUser.id,
             response: direction === 'right' ? 'know' : 'dontKnow',
           });
 
-          if (!scheduleResult.success) {
+          if (scheduleResult.success) {
+            // Store snapshot for undo
+            setLastSnapshot(scheduleResult.previousState);
+          } else {
             console.error('[Learn] Failed to adjust schedule:', scheduleResult.error);
-            // Continue anyway - schedule failure shouldn't block learning
           }
         }
 
@@ -159,7 +109,6 @@ export default function LearnScreen() {
         setShowUndo(true);
       } catch (error) {
         console.error('[Learn] Unexpected error in handleSwipe:', error);
-        // Show undo anyway - user can still undo UI state
         setShowUndo(true);
       }
     },
@@ -167,7 +116,7 @@ export default function LearnScreen() {
   );
 
   // Handle undo
-  const handleUndo = useCallback(async () => {
+  const handleUndo = useCallback(() => {
     if (!undoBuffer || !currentUser?.id) return;
 
     try {
@@ -175,22 +124,24 @@ export default function LearnScreen() {
       undoLastSwipe();
       setShowUndo(false);
 
-      // Revert SR schedule adjustment in database
+      // Revert SR schedule adjustment in database (with full SM-2 snapshot)
       if (undoBuffer.direction !== 'up') {
-        const revertResult = await revertScheduleAdjustment(undoBuffer.cardId, currentUser.id);
+        const revertResult = revertScheduleAdjustment(
+          undoBuffer.cardId,
+          currentUser.id,
+          lastSnapshot
+        );
 
         if (!revertResult.success) {
           console.error('[Learn] Failed to revert schedule:', revertResult.error);
         }
       }
 
-      // NOTE: learningEvents are immutable for audit trail
-      // We don't delete CARD_REVIEWED events, only revert the SR schedule
-      // Full undo history tracking will be implemented in Story 1.7
+      setLastSnapshot(undefined);
     } catch (error) {
       console.error('[Learn] Unexpected error in handleUndo:', error);
     }
-  }, [undoBuffer, undoLastSwipe, currentUser]);
+  }, [undoBuffer, undoLastSwipe, currentUser, lastSnapshot]);
 
   // Loading state
   if (isLoading) {
@@ -227,16 +178,31 @@ export default function LearnScreen() {
           }}>
           {t('learn.emptySubtitle', 'Nghỉ ngơi, gặp lại sau')}
         </Text>
-        {/* DEBUG: Button to check database */}
-        <Button mode="outlined" onPress={checkDatabase} style={{ marginTop: 24 }}>
-          DEBUG: Check Database
-        </Button>
       </View>
     );
   }
 
+  const showWarning = srQueueResult != null && srQueueResult.totalDue >= BURNOUT_WARNING_THRESHOLD;
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {/* Queue info header */}
+      <View style={styles.headerContainer}>
+        {srQueueResult && (
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            {t('learn.queueInfo', 'Hôm nay bạn có {{count}} từ cần ôn (~{{minutes}} phút)', {
+              count: srQueueResult.dueCount + srQueueResult.newCount,
+              minutes: srQueueResult.estimatedMinutes,
+            })}
+          </Text>
+        )}
+        {showWarning && (
+          <Text variant="bodySmall" style={{ color: theme.colors.error, marginTop: 4 }}>
+            {t('learn.queueWarning')}
+          </Text>
+        )}
+      </View>
+
       {/* Progress counter */}
       <View style={styles.counterContainer}>
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -244,13 +210,13 @@ export default function LearnScreen() {
         </Text>
       </View>
 
-      {/* Flashcard stack (currently showing 1 card, will add stack rendering in refactor) */}
+      {/* Flashcard stack */}
       <View style={styles.cardContainer}>
         <BaseSwipeCard
           card={currentCard}
           variant="learning"
           onSwipe={handleSwipe}
-          allowSwipeUp={false} // Beginner level: swipe up disabled
+          allowSwipeUp={false}
         />
       </View>
 
@@ -267,9 +233,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  counterContainer: {
+  headerContainer: {
     position: 'absolute',
     top: 16,
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+  },
+  counterContainer: {
+    position: 'absolute',
+    top: 56,
     right: 16,
   },
   cardContainer: {

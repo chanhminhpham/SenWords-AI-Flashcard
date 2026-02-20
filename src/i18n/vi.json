@@ -116,6 +116,8 @@
     "empty": "Bạn đã ôn hết! 🌿",
     "emptySubtitle": "Nghỉ ngơi, gặp lại sau",
     "counter": "{{current}}/{{total}} từ hôm nay",
+    "queueInfo": "Hôm nay bạn có {{count}} từ cần ôn (~{{minutes}} phút)",
+    "queueWarning": "Hôm nay bạn có nhiều từ cần ôn. Hãy tập trung vào từ quan trọng nhất!",
     "encouragement": {
       "left": "Gặp lại sớm!",
       "right": "Tuyệt vời! ✨"

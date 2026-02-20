@@ -79,11 +79,12 @@ describe('local-schema', () => {
     it('defines all 10 columns', () => {
       const columns = getTableColumns(srSchedule);
       const columnNames = Object.keys(columns);
-      expect(columnNames).toHaveLength(10);
+      expect(columnNames).toHaveLength(11);
       expect(columnNames).toContain('easeFactor');
       expect(columnNames).toContain('nextReviewAt');
       expect(columnNames).toContain('reviewCount');
       expect(columnNames).toContain('accuracy');
+      expect(columnNames).toContain('depthLevel');
     });
 
     it('maps column names correctly', () => {
