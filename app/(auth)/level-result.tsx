@@ -28,7 +28,6 @@ export default function LevelResultScreen() {
   const selectedGoal = useOnboardingStore((s) => s.selectedGoal);
   const manualLevelSelected = useOnboardingStore((s) => s.manualLevelSelected);
   const placementResponses = useOnboardingStore((s) => s.placementResponses);
-  const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
   const user = useAuthStore((s) => s.user);
   const reduceMotion = useAppStore((s) => s.shouldReduceMotion());
 
@@ -74,9 +73,10 @@ export default function LevelResultScreen() {
       });
     }
 
-    completeOnboarding();
     setSaving(false);
-    router.replace('/(tabs)/home' as Href);
+    // Navigate to first learning session (Story 1.8)
+    // completeOnboarding() will be called after first session + celebration
+    router.replace('/(auth)/first-session' as Href);
   };
 
   if (determinedLevel === null) {

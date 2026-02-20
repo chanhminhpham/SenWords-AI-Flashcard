@@ -1,7 +1,7 @@
 // SR Scheduling Service — SM-2 Spaced Repetition (Story 1.7)
 import { getDb, runInTransaction } from '@/db';
 import { learningEvents, srSchedule, userPreferences, vocabularyCards } from '@/db/local-schema';
-import { and, asc, eq, inArray, lte, notInArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, lte, notInArray, sql } from 'drizzle-orm';
 
 import {
   calculateDepthLevel,
@@ -19,6 +19,7 @@ export const MAX_NEW_CARDS_ADVANCED = 10;
 export const MAX_DAILY_QUEUE = 75;
 export const BURNOUT_WARNING_THRESHOLD = 80;
 export const SECONDS_PER_CARD = 8;
+export const FIRST_SESSION_CARD_COUNT = 5;
 
 export interface AdjustScheduleParams {
   cardId: number; // Integer ID from vocabularyCards table
@@ -452,4 +453,111 @@ export function getCardDepthLevel(cardId: number, userId: string): number {
     .all();
 
   return result.length > 0 ? result[0].depthLevel : 0;
+}
+
+// ---------------------------------------------------------------------------
+// First Session Word Selection (Story 1.8 — AC4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Select 5 words for the first learning session after onboarding.
+ *
+ * Priority:
+ * 1. Words matching user's goal topic AND within difficulty level
+ * 2. Any words within difficulty level (fill remaining)
+ * 3. Words one difficulty level higher (fallback)
+ *
+ * Returns empty array if vocabulary_cards table is empty (empty guard).
+ * The caller (FirstSessionScreen) shows error UI when empty.
+ */
+export function selectFirstSessionWords(
+  userLevel: number,
+  goalId: string | null
+): VocabularyCard[] {
+  const db = getDb();
+  const needed = FIRST_SESSION_CARD_COUNT;
+
+  // Step 1: Try to find words matching goal topic + level
+  let words: VocabularyCard[] = [];
+
+  if (goalId) {
+    words = db
+      .select()
+      .from(vocabularyCards)
+      .where(lte(vocabularyCards.difficultyLevel, userLevel))
+      .orderBy(sql`RANDOM()`)
+      .all()
+      .filter((card) => {
+        const tags = card.topicTags ?? [];
+        return tags.includes(goalId);
+      })
+      .slice(0, needed);
+  }
+
+  // Step 2: Fill remaining with any words at same level
+  if (words.length < needed) {
+    const existingIds = words.map((w) => w.id);
+    const remaining = needed - words.length;
+
+    let fillWords: VocabularyCard[];
+    if (existingIds.length > 0) {
+      fillWords = db
+        .select()
+        .from(vocabularyCards)
+        .where(
+          and(
+            lte(vocabularyCards.difficultyLevel, userLevel),
+            notInArray(vocabularyCards.id, existingIds)
+          )
+        )
+        .orderBy(sql`RANDOM()`)
+        .limit(remaining)
+        .all();
+    } else {
+      fillWords = db
+        .select()
+        .from(vocabularyCards)
+        .where(lte(vocabularyCards.difficultyLevel, userLevel))
+        .orderBy(sql`RANDOM()`)
+        .limit(remaining)
+        .all();
+    }
+
+    words = [...words, ...fillWords];
+  }
+
+  // Step 3: Fallback — expand difficulty level by 1
+  if (words.length < needed) {
+    const existingIds = words.map((w) => w.id);
+    const remaining = needed - words.length;
+
+    let moreWords: VocabularyCard[];
+    if (existingIds.length > 0) {
+      moreWords = db
+        .select()
+        .from(vocabularyCards)
+        .where(
+          and(
+            lte(vocabularyCards.difficultyLevel, userLevel + 1),
+            notInArray(vocabularyCards.id, existingIds)
+          )
+        )
+        .orderBy(sql`RANDOM()`)
+        .limit(remaining)
+        .all();
+    } else {
+      moreWords = db
+        .select()
+        .from(vocabularyCards)
+        .where(lte(vocabularyCards.difficultyLevel, userLevel + 1))
+        .orderBy(sql`RANDOM()`)
+        .limit(remaining)
+        .all();
+    }
+
+    words = [...words, ...moreWords];
+  }
+
+  // Empty guard — return empty if DB has no words
+  return words;
 }

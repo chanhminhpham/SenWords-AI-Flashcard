@@ -104,7 +104,7 @@ describe('LevelResultScreen', () => {
     expect(screen.getByTestId('start-button')).toBeTruthy();
   });
 
-  it('navigates to tabs on start', async () => {
+  it('navigates to first-session on start', async () => {
     useOnboardingStore.getState().selectGoal('travel');
     useOnboardingStore.getState().selectLevelManually(UserLevel.Intermediate);
 
@@ -112,9 +112,11 @@ describe('LevelResultScreen', () => {
     fireEvent.press(screen.getByTestId('start-button'));
 
     await waitFor(() => {
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)/home');
+      // Story 1.8: level-result → first-session (not tabs/home directly)
+      expect(router.replace).toHaveBeenCalledWith('/(auth)/first-session');
     });
-    expect(useOnboardingStore.getState().onboardingCompleted).toBe(true);
+    // completeOnboarding is now called in celebration screen, not level-result
+    expect(useOnboardingStore.getState().onboardingCompleted).toBe(false);
   });
 
   it('renders lotus animation', () => {

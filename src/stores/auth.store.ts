@@ -94,8 +94,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             console.log('[AuthStore] Onboarding not completed, keeping as incomplete');
           }
         } catch (onboardingError) {
-          console.error('[AuthStore] Onboarding check failed:', onboardingError);
-          // Continue anyway - don't block app from loading
+          console.error('[AuthStore] Supabase onboarding check failed:', onboardingError);
+
+          // Fallback: check SQLite user_preferences for offline support (Story 1.8)
+          try {
+            const { getDb } = await import('@/db');
+            const { userPreferences } = await import('@/db/local-schema');
+            const { eq } = await import('drizzle-orm');
+            const { useOnboardingStore } = await import('@/stores/onboarding.store');
+
+            const db = getDb();
+            const prefs = db
+              .select()
+              .from(userPreferences)
+              .where(eq(userPreferences.userId, session.user.id))
+              .all();
+
+            if (prefs.length > 0 && prefs[0].learningGoal && prefs[0].level !== null) {
+              console.log('[AuthStore] SQLite fallback: onboarding completed');
+              useOnboardingStore.getState().completeOnboarding();
+            }
+          } catch (sqliteError) {
+            console.error('[AuthStore] SQLite fallback also failed:', sqliteError);
+          }
         }
       }
 

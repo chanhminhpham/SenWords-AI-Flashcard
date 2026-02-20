@@ -123,6 +123,17 @@
       "right": "Great job! ✨"
     }
   },
+  "firstSession": {
+    "tooltip": "👉 Right = Know, 👈 Left = Don't know",
+    "tooltipDismiss": "Tap to dismiss",
+    "counter": "{{current}}/{{total}} words",
+    "celebrationDefault": "🎉 First steps!",
+    "celebrationAllKnown": "Amazing! You know them all!",
+    "progressMessage": "You've completed your first lesson!",
+    "continueButton": "Start your journey",
+    "emptyError": "No vocabulary available. Please update the app.",
+    "loading": "Preparing your lesson..."
+  },
   "accessibility": {
     "swipeRight": "Swipe right if you know this word",
     "swipeCardHint": "Swipe right if you know, left if you don't",
@@ -131,6 +142,8 @@
     "lotusAnimation": "Lotus flower — result animation",
     "levelBadge": "Your level: {{levelLabel}}",
     "goalCard": "Goal {{label}}: {{description}}",
-    "levelCard": "Level {{label}}: {{description}}"
+    "levelCard": "Level {{label}}: {{description}}",
+    "firstSessionTooltip": "Swipe right if you know, left if you don't",
+    "celebrationMessage": "Congratulations! You've completed your first lesson!"
   }
 }

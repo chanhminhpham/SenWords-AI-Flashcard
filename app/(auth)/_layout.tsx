@@ -27,7 +27,13 @@ export default function AuthLayout() {
   }
 
   // Guard: onboarding screens require login/trial completion
-  const onboardingScreens = ['goal-selection', 'placement-test', 'level-result'];
+  const onboardingScreens = [
+    'goal-selection',
+    'placement-test',
+    'level-result',
+    'first-session',
+    'celebration',
+  ];
   if (onboardingScreens.includes(currentScreen) && (!ageVerified || !consentGiven)) {
     return <Redirect href={'/(auth)/age-verification' as Href} />;
   }
@@ -41,6 +47,8 @@ export default function AuthLayout() {
       <Stack.Screen name="goal-selection" />
       <Stack.Screen name="placement-test" />
       <Stack.Screen name="level-result" />
+      <Stack.Screen name="first-session" />
+      <Stack.Screen name="celebration" />
     </Stack>
   );
 }

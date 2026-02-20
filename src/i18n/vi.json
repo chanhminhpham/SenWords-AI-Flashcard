@@ -123,12 +123,25 @@
       "right": "Tuyệt vời! ✨"
     }
   },
+  "firstSession": {
+    "tooltip": "👉 Phải = Biết, 👈 Trái = Chưa biết",
+    "tooltipDismiss": "Nhấn để đóng",
+    "counter": "{{current}}/{{total}} từ",
+    "celebrationDefault": "🎉 Bước chân đầu tiên!",
+    "celebrationAllKnown": "Tuyệt vời! Bạn biết hết rồi!",
+    "progressMessage": "Bạn đã hoàn thành bài học đầu tiên!",
+    "continueButton": "Bắt đầu hành trình",
+    "emptyError": "Chưa có từ vựng. Vui lòng cập nhật ứng dụng.",
+    "loading": "Đang chuẩn bị bài học..."
+  },
   "accessibility": {
     "swipeRight": "Vuốt phải nếu biết từ này",
     "swipeCardHint": "Vuốt phải nếu biết, trái nếu chưa biết",
     "undoAction": "Hoàn tác thao tác vuốt",
     "tutorialCard": "Thẻ hướng dẫn vuốt — vuốt trái hoặc phải để thực hành",
     "lotusAnimation": "Hình hoa sen — hiệu ứng kết quả",
+    "firstSessionTooltip": "Vuốt phải nếu biết, trái nếu chưa biết",
+    "celebrationMessage": "Chúc mừng! Bạn đã hoàn thành bài học đầu tiên!",
     "levelBadge": "Trình độ của bạn: {{levelLabel}}",
     "goalCard": "Mục tiêu {{label}}: {{description}}",
     "levelCard": "Trình độ {{label}}: {{description}}"
