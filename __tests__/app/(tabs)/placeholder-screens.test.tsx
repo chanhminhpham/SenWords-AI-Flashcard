@@ -61,7 +61,7 @@ function renderScreen(Screen: React.ComponentType) {
 describe('Placeholder tab screens', () => {
   it('renders Home screen with title', () => {
     const { getByText } = renderScreen(HomeScreen);
-    expect(getByText('Học')).toBeTruthy();
+    expect(getByText('Từ vựng')).toBeTruthy();
     expect(getByText('Đang phát triển...')).toBeTruthy();
   });
 

@@ -1,5 +1,6 @@
 import { useOnboardingStore } from '@/stores/onboarding.store';
-import { UserLevel } from '@/types/onboarding';
+// TODO: restore UserLevel import when level-gated unlock is re-enabled
+// import { UserLevel } from '@/types/onboarding';
 import type { UserLevelValue } from '@/types/onboarding';
 
 /**
@@ -22,14 +23,15 @@ const LOCKED_MESSAGE = 'Học thêm để mở khóa tính năng này!';
  * Determines which tabs are unlocked based on user level.
  * home and profile are ALWAYS unlocked (ADR: profile for settings/logout access).
  */
-export function getTabUnlockState(level: UserLevelValue | null): TabUnlockState {
-  const safeLevel = level ?? UserLevel.Beginner;
+export function getTabUnlockState(_level: UserLevelValue | null): TabUnlockState {
+  // TODO: restore level-gated unlock after Story 1.8
+  // const safeLevel = _level ?? UserLevel.Beginner;
 
   return {
     home: true, // Always unlocked — core learning entry point
-    learn: true, // TODO: restore `safeLevel >= UserLevel.PreIntermediate` after Story 1.8
-    scan: true, // TODO: restore `safeLevel >= UserLevel.Intermediate` after Story 1.8
-    progress: true, // TODO: restore `safeLevel >= UserLevel.UpperIntermediate` after Story 1.8
+    learn: true, // TODO: restore `safeLevel >= UserLevel.PreIntermediate`
+    scan: true, // TODO: restore `safeLevel >= UserLevel.Intermediate`
+    progress: true, // TODO: restore `safeLevel >= UserLevel.UpperIntermediate`
     profile: true, // Always unlocked — settings, logout, data privacy (FR48-FR53)
   };
 }
