@@ -25,6 +25,16 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 80; // 80px threshold per Story 1.6 spec
 const BOUNCE_DISTANCE = 20; // Visual feedback for disabled gestures
 
+/** Map difficultyLevel (0-6) → CEFR label */
+const CEFR_LABELS: Record<number, string> = {
+  1: 'A1',
+  2: 'A2',
+  3: 'B1',
+  4: 'B2',
+  5: 'C1',
+  6: 'C2',
+};
+
 export type SwipeDirection = 'right' | 'left' | 'up';
 
 export interface BaseSwipeCardProps {
@@ -32,6 +42,7 @@ export interface BaseSwipeCardProps {
   variant: 'learning' | 'preview' | 'detail';
   onSwipe: (cardId: number, direction: SwipeDirection) => void;
   allowSwipeUp?: boolean; // Progressive unlock: false for Beginner level
+  depthLevel?: number; // SR depth level (1-4), from sr_schedule
   testID?: string;
 }
 
@@ -57,6 +68,7 @@ export function BaseSwipeCard({
   variant,
   onSwipe,
   allowSwipeUp = false,
+  depthLevel = 1,
   testID = 'base-swipe-card',
 }: BaseSwipeCardProps) {
   const translateX = useSharedValue(0);
@@ -220,11 +232,18 @@ export function BaseSwipeCard({
 
         {/* Card content */}
         <View style={styles.content}>
-          {/* KnowledgeDot */}
+          {/* Depth indicator (top-right) */}
           <View style={styles.dotContainer}>
-            {/* TODO Story 1.7: Derive state from card.masteryLevel or SR schedule accuracy */}
-            <KnowledgeDot state="empty" size={8} />
+            <KnowledgeDot depthLevel={depthLevel} size={8} />
+            <Text style={[styles.depthLabel, { color: theme.colors.onSurfaceVariant }]}>
+              {t('learn.depth', 'Tầng {{level}}', { level: depthLevel })}
+            </Text>
           </View>
+
+          {/* IPA pronunciation */}
+          {card.ipa && (
+            <Text style={[styles.ipa, { color: theme.colors.nature.accent }]}>{card.ipa}</Text>
+          )}
 
           {/* Word (headword) */}
           <Text style={[styles.word, { color: theme.colors.onSurface }]}>{card.word}</Text>
@@ -234,12 +253,23 @@ export function BaseSwipeCard({
             {card.definition}
           </Text>
 
-          {/* Part of Speech */}
-          {card.partOfSpeech && (
-            <Text style={[styles.partOfSpeech, { color: theme.colors.onSurfaceVariant }]}>
-              ({card.partOfSpeech})
-            </Text>
-          )}
+          {/* Tags: part of speech + CEFR level */}
+          <View style={styles.tagRow}>
+            {card.partOfSpeech && (
+              <View style={[styles.tag, { backgroundColor: theme.colors.nature.tint }]}>
+                <Text style={[styles.tagText, { color: theme.colors.nature.accent }]}>
+                  {card.partOfSpeech}
+                </Text>
+              </View>
+            )}
+            {card.difficultyLevel != null && card.difficultyLevel > 0 && (
+              <View style={[styles.tag, { backgroundColor: theme.colors.nature.warm }]}>
+                <Text style={[styles.tagText, { color: theme.colors.feedback.dontKnowText }]}>
+                  {CEFR_LABELS[card.difficultyLevel] ?? `L${card.difficultyLevel}`}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </Animated.View>
     </GestureDetector>
@@ -249,44 +279,66 @@ export function BaseSwipeCard({
 const styles = StyleSheet.create({
   card: {
     width: SCREEN_WIDTH * 0.85,
-    minHeight: 280,
-    borderRadius: 16,
+    minHeight: 320,
+    borderRadius: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4ECBA0',
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: '#2D8A5E',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     overflow: 'hidden',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-    minHeight: 280, // Ensure minimum touch target size
+    minHeight: 320,
   },
   dotContainer: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  depthLabel: {
+    fontSize: 10,
+  },
+  ipa: {
+    fontSize: 13,
+    marginBottom: 8,
   },
   word: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    fontSize: 34,
+    fontWeight: '700',
+    marginBottom: 12,
     textAlign: 'center',
   },
   definition: {
     fontSize: 18,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  partOfSpeech: {
-    fontSize: 14,
-    fontStyle: 'italic',
+  tagRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 20,
+  },
+  tag: {
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  tagText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

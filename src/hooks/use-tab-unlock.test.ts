@@ -3,59 +3,24 @@ import { UserLevel } from '@/types/onboarding';
 import { getTabUnlockState } from './use-tab-unlock';
 
 describe('getTabUnlockState', () => {
-  it('unlocks only home and profile for Beginner (level 0)', () => {
-    const state = getTabUnlockState(UserLevel.Beginner);
-    expect(state).toEqual({
-      home: true,
-      learn: false,
-      scan: false,
-      progress: false,
-      profile: true,
-    });
-  });
+  // NOTE: All tabs are temporarily unlocked for testing (TODO in use-tab-unlock.ts).
+  // These tests reflect the current "all unlocked" state.
+  // Restore level-gated tests when progressive unlock is re-enabled.
 
-  it('unlocks home, learn, profile for PreIntermediate (level 1)', () => {
-    const state = getTabUnlockState(UserLevel.PreIntermediate);
-    expect(state).toEqual({
-      home: true,
-      learn: true,
-      scan: false,
-      progress: false,
-      profile: true,
-    });
-  });
-
-  it('unlocks home, learn, scan, profile for Intermediate (level 2)', () => {
-    const state = getTabUnlockState(UserLevel.Intermediate);
-    expect(state).toEqual({
-      home: true,
-      learn: true,
-      scan: true,
-      progress: false,
-      profile: true,
-    });
-  });
-
-  it('unlocks all tabs for UpperIntermediate (level 3)', () => {
-    const state = getTabUnlockState(UserLevel.UpperIntermediate);
-    expect(state).toEqual({
+  it('unlocks all tabs regardless of level (temporary override)', () => {
+    const allUnlocked = {
       home: true,
       learn: true,
       scan: true,
       progress: true,
       profile: true,
-    });
-  });
+    };
 
-  it('defaults to Beginner when level is null', () => {
-    const state = getTabUnlockState(null);
-    expect(state).toEqual({
-      home: true,
-      learn: false,
-      scan: false,
-      progress: false,
-      profile: true,
-    });
+    expect(getTabUnlockState(UserLevel.Beginner)).toEqual(allUnlocked);
+    expect(getTabUnlockState(UserLevel.PreIntermediate)).toEqual(allUnlocked);
+    expect(getTabUnlockState(UserLevel.Intermediate)).toEqual(allUnlocked);
+    expect(getTabUnlockState(UserLevel.UpperIntermediate)).toEqual(allUnlocked);
+    expect(getTabUnlockState(null)).toEqual(allUnlocked);
   });
 
   it('always keeps home unlocked', () => {

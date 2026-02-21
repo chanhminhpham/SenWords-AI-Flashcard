@@ -1,6 +1,8 @@
 // Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6 → 1.7)
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +25,10 @@ import {
   type ScheduleSnapshot,
 } from '@/services/sr/sr.service';
 
+// Nature Path gradient: light green → warm → white
+const GRADIENT_COLORS = ['#E8F4ED', '#FFF8F0', '#FFFFFF'] as const;
+const GRADIENT_LOCATIONS = [0, 0.5, 1] as const;
+
 /**
  * Learn Screen — Core flashcard swipe interaction.
  *
@@ -38,6 +44,7 @@ import {
 export default function LearnScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((s) => s.user);
 
   const [showUndo, setShowUndo] = useState(false);
@@ -157,18 +164,18 @@ export default function LearnScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={styles.container}>
         <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
           {t('learn.loading', 'Đang tải...')}
         </Text>
-      </View>
+      </LinearGradient>
     );
   }
 
   // Empty state — no cards to review
   if (!currentCard) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={styles.container}>
         <MaterialCommunityIcons
           name="check-circle-outline"
           size={64}
@@ -189,41 +196,42 @@ export default function LearnScreen() {
           }}>
           {t('learn.emptySubtitle', 'Nghỉ ngơi, gặp lại sau')}
         </Text>
-      </View>
+      </LinearGradient>
     );
   }
 
   const showWarning = srQueueResult != null && srQueueResult.totalDue >= BURNOUT_WARNING_THRESHOLD;
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Queue info header */}
-      <View style={styles.headerContainer}>
-        {srQueueResult && (
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {t('learn.queueInfo', 'Hôm nay bạn có {{count}} từ cần ôn (~{{minutes}} phút)', {
-              count: srQueueResult.dueCount + srQueueResult.newCount,
-              minutes: srQueueResult.estimatedMinutes,
-            })}
-          </Text>
-        )}
-        {showWarning && (
-          <Text variant="bodySmall" style={{ color: theme.colors.error, marginTop: 4 }}>
-            {t('learn.queueWarning')}
-          </Text>
-        )}
-      </View>
+  // Progress dots: show up to 9 segments (matching design)
+  const dotCount = Math.min(total, 9);
 
-      {/* Progress counter */}
-      <View style={styles.counterContainer}>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-          {t('learn.counter', '{{current}}/{{total}} từ hôm nay', { current, total })}
+  return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={styles.container}>
+      {/* Nature Path header: streak badge (left) + progress counter (right) */}
+      <View style={[styles.headerRow, { top: insets.top + 8 }]}>
+        <View style={[styles.streakBadge, { backgroundColor: theme.colors.nature.tint }]}>
+          <Text style={[styles.streakText, { color: theme.colors.nature.accent }]}>
+            🌿 {t('learn.streak', '{{days}} ngày', { days: 1 })}
+          </Text>
+        </View>
+        <Text style={[styles.counterText, { color: theme.colors.nature.accent }]}>
+          {current}/{total} 🌸
         </Text>
       </View>
+
+      {/* Burnout warning */}
+      {showWarning && (
+        <View style={[styles.warningContainer, { top: insets.top + 48 }]}>
+          <Text variant="bodySmall" style={{ color: theme.colors.error }}>
+            {t('learn.queueWarning')}
+          </Text>
+        </View>
+      )}
 
       {/* Flashcard stack */}
       <View style={styles.cardContainer}>
         <BaseSwipeCard
+          key={currentCard.id}
           card={currentCard}
           variant="learning"
           onSwipe={handleSwipe}
@@ -231,9 +239,27 @@ export default function LearnScreen() {
         />
       </View>
 
+      {/* Progress dots + journey text */}
+      <View style={[styles.progressArea, { bottom: insets.bottom + 80 }]}>
+        <View style={styles.dotRow}>
+          {Array.from({ length: dotCount }, (_, i) => {
+            let bg: string;
+            if (i < current - 1)
+              bg = theme.colors.feedback.know; // completed
+            else if (i === current - 1)
+              bg = theme.colors.sky.blue; // current
+            else bg = '#DDD'; // remaining
+            return <View key={i} style={[styles.progressDot, { backgroundColor: bg }]} />;
+          })}
+        </View>
+        <Text style={styles.journeyText}>
+          {t('learn.journeyStep', 'Bước {{step}} trên hành trình hôm nay', { step: current })}
+        </Text>
+      </View>
+
       {/* Undo snackbar */}
       <UndoSnackbar visible={showUndo} onDismiss={() => setShowUndo(false)} onUndo={handleUndo} />
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -244,21 +270,57 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  headerContainer: {
+  headerRow: {
     position: 'absolute',
-    top: 16,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  streakBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  streakText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  counterText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  warningContainer: {
+    position: 'absolute',
     left: 16,
     right: 16,
     alignItems: 'center',
-  },
-  counterContainer: {
-    position: 'absolute',
-    top: 56,
-    right: 16,
   },
   cardContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  progressArea: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+  },
+  dotRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginBottom: 8,
+  },
+  progressDot: {
+    width: 24,
+    height: 4,
+    borderRadius: 2,
+  },
+  journeyText: {
+    fontSize: 11,
+    color: '#999',
   },
 });

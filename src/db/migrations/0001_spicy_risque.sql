@@ -1,0 +1,1 @@
+ALTER TABLE `sr_schedule` ADD `depth_level` integer DEFAULT 1 NOT NULL;

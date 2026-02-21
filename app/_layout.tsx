@@ -10,7 +10,10 @@ polyfillWebCrypto();
 import '../global.css';
 
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { LogBox, useColorScheme } from 'react-native';
+
+// Disable yellow box warnings in dev builds
+LogBox.ignoreAllLogs(true);
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react-native';

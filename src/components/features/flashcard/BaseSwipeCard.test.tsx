@@ -46,7 +46,7 @@ describe('BaseSwipeCard', () => {
 
     expect(getByText('hello')).toBeTruthy();
     expect(getByText('lời chào')).toBeTruthy();
-    expect(getByText('(n.)')).toBeTruthy();
+    expect(getByText('n.')).toBeTruthy(); // POS shown as tag (no parens)
     expect(getByTestId('base-swipe-card')).toBeTruthy();
     expect(getByTestId('knowledge-dot')).toBeTruthy();
   });
@@ -113,7 +113,7 @@ describe('BaseSwipeCard', () => {
       <BaseSwipeCard card={cardWithPos} variant="learning" onSwipe={onSwipe} />
     );
 
-    expect(getByText('(v.)')).toBeTruthy();
+    expect(getByText('v.')).toBeTruthy(); // POS shown as tag (no parens)
   });
 
   it('handles missing part of speech gracefully', () => {
@@ -123,7 +123,7 @@ describe('BaseSwipeCard', () => {
       <BaseSwipeCard card={cardWithoutPos} variant="learning" onSwipe={onSwipe} />
     );
 
-    expect(queryByText(/\(/)).toBeNull(); // No parentheses rendered
+    expect(queryByText('v.')).toBeNull(); // No POS tag rendered for empty string
   });
 
   it('supports different variants', () => {

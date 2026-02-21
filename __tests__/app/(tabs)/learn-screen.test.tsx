@@ -11,6 +11,8 @@ jest.mock('@/theme', () => ({
       onSurfaceVariant: '#4A4E54',
       error: '#B00020',
       feedback: { know: '#4ECBA0' },
+      nature: { accent: '#2D8A5E', tint: '#E8F4ED' },
+      sky: { blue: '#4A9FE5' },
     },
   }),
 }));
@@ -61,6 +63,7 @@ jest.mock('@/components/ui/UndoSnackbar', () => ({
 
 import { render } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { VocabularyCard } from '@/types/vocabulary';
 
@@ -87,9 +90,15 @@ function renderLearnScreen() {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>
-      <LearnScreen />
-    </QueryClientProvider>
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { x: 0, y: 0, width: 390, height: 844 },
+        insets: { top: 47, left: 0, right: 0, bottom: 34 },
+      }}>
+      <QueryClientProvider client={queryClient}>
+        <LearnScreen />
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -134,8 +143,8 @@ describe('LearnScreen', () => {
     mockGetQueueProgress.mockReturnValue({ current: 1, total: 1 });
 
     const { findByText } = renderLearnScreen();
-    // Counter is always present when card view renders
-    expect(await findByText(/learn\.counter/)).toBeTruthy();
+    // Streak badge is always present when card view renders
+    expect(await findByText(/learn\.streak/)).toBeTruthy();
     // Card word renders via BaseSwipeCard mock
     expect(await findByText('hello')).toBeTruthy();
   });
@@ -152,7 +161,7 @@ describe('LearnScreen', () => {
     mockGetQueueProgress.mockReturnValue({ current: 1, total: 1 });
 
     const { findByText, queryByText } = renderLearnScreen();
-    await findByText(/learn\.counter/);
+    await findByText(/learn\.streak/);
     expect(queryByText('learn.queueWarning')).toBeNull();
   });
 });

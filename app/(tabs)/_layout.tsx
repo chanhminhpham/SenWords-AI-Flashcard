@@ -23,8 +23,8 @@ const TAB_CONFIG: readonly {
   label: string;
   icon: IconName;
 }[] = [
-  { name: 'home', label: 'Học', icon: 'leaf' },
-  { name: 'learn', label: 'Từ vựng', icon: 'book-open-page-variant' },
+  { name: 'learn', label: 'Học', icon: 'leaf' },
+  { name: 'home', label: 'Từ vựng', icon: 'book-open-page-variant' },
   { name: 'scan', label: 'Scan', icon: 'camera' },
   { name: 'progress', label: 'Hành trình', icon: 'map-marker-path' },
   { name: 'profile', label: 'Tôi', icon: 'account' },

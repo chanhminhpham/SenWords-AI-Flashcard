@@ -27,9 +27,9 @@ export function getTabUnlockState(level: UserLevelValue | null): TabUnlockState 
 
   return {
     home: true, // Always unlocked — core learning entry point
-    learn: safeLevel >= UserLevel.PreIntermediate,
-    scan: safeLevel >= UserLevel.Intermediate,
-    progress: safeLevel >= UserLevel.UpperIntermediate,
+    learn: true, // TODO: restore `safeLevel >= UserLevel.PreIntermediate` after Story 1.8
+    scan: true, // TODO: restore `safeLevel >= UserLevel.Intermediate` after Story 1.8
+    progress: true, // TODO: restore `safeLevel >= UserLevel.UpperIntermediate` after Story 1.8
     profile: true, // Always unlocked — settings, logout, data privacy (FR48-FR53)
   };
 }

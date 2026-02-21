@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 
@@ -14,7 +15,15 @@ let _redirectUri: string | null = null;
 
 function getRedirectUri(): string {
   if (!_redirectUri) {
-    _redirectUri = makeRedirectUri({ scheme: 'ai-flash-card' });
+    const isExpoGo = Constants.executionEnvironment === 'storeClient';
+    if (isExpoGo) {
+      // Expo Go: Supabase rejects exp:// scheme, use Expo auth proxy (HTTPS).
+      // The proxy redirects back to exp:// which Expo Go intercepts.
+      _redirectUri = 'https://auth.expo.io/@chanhpham/ai-flash-card';
+    } else {
+      _redirectUri = makeRedirectUri({ scheme: 'ai-flash-card' });
+    }
+    console.log('[AUTH] Redirect URI:', _redirectUri, isExpoGo ? '(Expo Go)' : '(Dev Build)');
   }
   return _redirectUri;
 }
@@ -69,36 +78,51 @@ export async function signInWithProvider(
     throw new Error('AUTH_NO_URL');
   }
 
+  console.log('[AUTH] OAuth URL:', data.url);
+  console.log('[AUTH] Listening for redirect to:', redirectUri);
+
   // Open system browser for OAuth
   const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
 
-  if (result.type !== 'success') {
-    // User cancelled or dismissed
-    return null;
-  }
+  console.log('[AUTH] Browser result type:', result.type);
 
-  // Implicit flow: extract session from redirect URL hash
+  let sessionData;
 
-  // With implicit flow, Supabase handles session automatically via detectSessionInUrl
-  // But since we have detectSessionInUrl: false, we need to manually parse and set session
-  const url = new URL(result.url);
-  const hashParams = new URLSearchParams(url.hash.substring(1)); // Remove # and parse
+  if (result.type === 'success') {
+    // Browser redirected back properly (dev build with custom scheme)
+    console.log('[AUTH] Browser redirect URL:', (result as { url: string }).url);
 
-  const accessToken = hashParams.get('access_token');
-  const refreshToken = hashParams.get('refresh_token');
+    const url = new URL((result as { url: string }).url);
+    const hashParams = new URLSearchParams(url.hash.substring(1));
 
-  if (!accessToken) {
-    console.error('[AUTH] No access_token in redirect URL:', result.url);
-    throw new Error('AUTH_NO_TOKEN');
-  }
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken || '',
-  });
+    if (!accessToken) {
+      console.error('[AUTH] No access_token in redirect URL:', (result as { url: string }).url);
+      throw new Error('AUTH_NO_TOKEN');
+    }
 
-  if (sessionError) {
-    throw sessionError;
+    const { data: setData, error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken || '',
+    });
+
+    if (sessionError) throw sessionError;
+    sessionData = setData;
+  } else {
+    // Browser didn't redirect back (Expo Go — exp:// not supported by Supabase).
+    // Check if session was set via onAuthStateChange listener anyway.
+    console.log('[AUTH] Browser did not redirect. Checking for session...');
+    const { data: check } = await supabase.auth.getSession();
+
+    if (!check.session) {
+      console.log('[AUTH] No session found — user likely cancelled');
+      return null;
+    }
+
+    console.log('[AUTH] Session found via auth listener (Expo Go fallback)');
+    sessionData = { session: check.session, user: check.session.user };
   }
 
   // Save age verification to profile after successful SSO
