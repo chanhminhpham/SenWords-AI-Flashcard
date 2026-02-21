@@ -13,7 +13,11 @@ export default function HomeScreen() {
     <View
       className="flex-1 items-center justify-center"
       style={{ backgroundColor: theme.colors.background }}>
-      <MaterialCommunityIcons name="book-open-page-variant" size={48} color={theme.colors.primary} />
+      <MaterialCommunityIcons
+        name="book-open-page-variant"
+        size={48}
+        color={theme.colors.primary}
+      />
       <Text variant="headlineSmall" style={{ marginTop: 16, color: theme.colors.onBackground }}>
         Từ vựng
       </Text>

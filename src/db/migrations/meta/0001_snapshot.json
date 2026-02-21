@@ -54,9 +54,7 @@
       "indexes": {
         "idx_learning_events_user_id": {
           "name": "idx_learning_events_user_id",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -65,12 +63,8 @@
           "name": "learning_events_card_id_vocabulary_cards_id_fk",
           "tableFrom": "learning_events",
           "tableTo": "vocabulary_cards",
-          "columnsFrom": [
-            "card_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["card_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -171,10 +165,7 @@
       "indexes": {
         "idx_sr_schedule_user_id_next_review_at": {
           "name": "idx_sr_schedule_user_id_next_review_at",
-          "columns": [
-            "user_id",
-            "next_review_at"
-          ],
+          "columns": ["user_id", "next_review_at"],
           "isUnique": false
         }
       },
@@ -183,12 +174,8 @@
           "name": "sr_schedule_card_id_vocabulary_cards_id_fk",
           "tableFrom": "sr_schedule",
           "tableTo": "vocabulary_cards",
-          "columnsFrom": [
-            "card_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["card_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -256,9 +243,7 @@
       "indexes": {
         "user_preferences_user_id_unique": {
           "name": "user_preferences_user_id_unique",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": true
         }
       },
@@ -361,16 +346,12 @@
       "indexes": {
         "idx_vocabulary_cards_word": {
           "name": "idx_vocabulary_cards_word",
-          "columns": [
-            "word"
-          ],
+          "columns": ["word"],
           "isUnique": false
         },
         "idx_vocabulary_cards_difficulty_level": {
           "name": "idx_vocabulary_cards_difficulty_level",
-          "columns": [
-            "difficulty_level"
-          ],
+          "columns": ["difficulty_level"],
           "isUnique": false
         }
       },

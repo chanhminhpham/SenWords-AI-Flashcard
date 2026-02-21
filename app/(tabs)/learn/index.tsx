@@ -164,7 +164,10 @@ export default function LearnScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={styles.container}>
+      <LinearGradient
+        colors={GRADIENT_COLORS}
+        locations={GRADIENT_LOCATIONS}
+        style={styles.container}>
         <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
           {t('learn.loading', 'Đang tải...')}
         </Text>
@@ -175,7 +178,10 @@ export default function LearnScreen() {
   // Empty state — no cards to review
   if (!currentCard) {
     return (
-      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={styles.container}>
+      <LinearGradient
+        colors={GRADIENT_COLORS}
+        locations={GRADIENT_LOCATIONS}
+        style={styles.container}>
         <MaterialCommunityIcons
           name="check-circle-outline"
           size={64}
@@ -206,7 +212,10 @@ export default function LearnScreen() {
   const dotCount = Math.min(total, 9);
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={styles.container}>
+    <LinearGradient
+      colors={GRADIENT_COLORS}
+      locations={GRADIENT_LOCATIONS}
+      style={styles.container}>
       {/* Nature Path header: streak badge (left) + progress counter (right) */}
       <View style={[styles.headerRow, { top: insets.top + 8 }]}>
         <View style={[styles.streakBadge, { backgroundColor: theme.colors.nature.tint }]}>
