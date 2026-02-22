@@ -1,6 +1,6 @@
 // BaseSwipeCard — GOLDEN FILE for all swipeable flashcard interactions (Story 1.6)
 // Sets pattern template for gesture handling, animations, and state management
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Text } from 'react-native-paper';
@@ -43,6 +43,7 @@ export interface BaseSwipeCardProps {
   onSwipe: (cardId: number, direction: SwipeDirection) => void;
   allowSwipeUp?: boolean; // Progressive unlock: false for Beginner level
   depthLevel?: number; // SR depth level (1-4), from sr_schedule
+  renderOverlay?: (card: VocabularyCard) => ReactNode;
   testID?: string;
 }
 
@@ -69,6 +70,7 @@ export function BaseSwipeCard({
   onSwipe,
   allowSwipeUp = false,
   depthLevel = 1,
+  renderOverlay,
   testID = 'base-swipe-card',
 }: BaseSwipeCardProps) {
   const translateX = useSharedValue(0);
@@ -270,6 +272,8 @@ export function BaseSwipeCard({
               </View>
             )}
           </View>
+
+          {variant === 'learning' && renderOverlay?.(card)}
         </View>
       </Animated.View>
     </GestureDetector>

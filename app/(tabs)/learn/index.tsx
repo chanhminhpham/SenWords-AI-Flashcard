@@ -11,6 +11,7 @@ import { Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
+import { WordFamilyChip } from '@/components/features/flashcard/WordFamilyChip';
 import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
 import { useAuthStore } from '@/stores/auth.store';
 import { useLearningEngine } from '@/stores/learning-engine.store';
@@ -245,6 +246,7 @@ export default function LearnScreen() {
           variant="learning"
           onSwipe={handleSwipe}
           allowSwipeUp={false}
+          renderOverlay={(card) => <WordFamilyChip cardId={card.id} />}
         />
       </View>
 

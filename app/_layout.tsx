@@ -38,6 +38,7 @@ import { useDatabase } from '@/db/use-database';
 import { initI18n } from '@/i18n';
 import { useDeviceTier } from '@/hooks/use-device-tier';
 import { loadDictionary } from '@/services/dictionary/dictionary.service';
+import { loadWordFamilies } from '@/services/dictionary/word-family.service';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { senWordDarkTheme } from '@/theme/dark-theme';
@@ -96,12 +97,26 @@ function RootLayout() {
     initializeAuth();
   }, [initializeAuth]);
 
-  // Load dictionary into SQLite after DB migrations complete
+  // Load dictionary + word families into SQLite after DB migrations complete
   useEffect(() => {
     if (dbReady) {
-      loadDictionary().catch((err) =>
-        Sentry.captureException(err, { tags: { module: 'dictionary-loading' } })
-      );
+      loadDictionary()
+        .then((result) => {
+          if (!result.success) {
+            Sentry.captureMessage(`Dictionary load failed: ${result.error}`, {
+              tags: { module: 'dictionary-loading' },
+            });
+          }
+          return loadWordFamilies();
+        })
+        .then((result) => {
+          if (result && !result.success) {
+            Sentry.captureMessage(`Word family load failed: ${result.error}`, {
+              tags: { module: 'word-family-loading' },
+            });
+          }
+        })
+        .catch((err) => Sentry.captureException(err, { tags: { module: 'dictionary-loading' } }));
     }
   }, [dbReady]);
 

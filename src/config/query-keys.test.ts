@@ -41,6 +41,16 @@ describe('queryKeys', () => {
     });
   });
 
+  describe('wordFamily keys', () => {
+    it('produces correct base key', () => {
+      expect(queryKeys.wordFamily.all).toEqual(['word-family']);
+    });
+
+    it('produces correct byCardId key', () => {
+      expect(queryKeys.wordFamily.byCardId(5)).toEqual(['word-family', 'byCardId', 5]);
+    });
+  });
+
   describe('key uniqueness', () => {
     it('all domain keys are unique', () => {
       const domains = [
@@ -48,6 +58,7 @@ describe('queryKeys', () => {
         queryKeys.learning.all[0],
         queryKeys.schedule.all[0],
         queryKeys.preferences.all[0],
+        queryKeys.wordFamily.all[0],
       ];
       const unique = new Set(domains);
       expect(unique.size).toBe(domains.length);

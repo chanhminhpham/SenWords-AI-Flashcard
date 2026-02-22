@@ -134,6 +134,11 @@
     "emptyError": "Chưa có từ vựng. Vui lòng cập nhật ứng dụng.",
     "loading": "Đang chuẩn bị bài học..."
   },
+  "wordFamily": {
+    "chipLabel": "Gia đình từ",
+    "sheetTitle": "Gia đình từ",
+    "noDefinition": "--"
+  },
   "accessibility": {
     "swipeRight": "Vuốt phải nếu biết từ này",
     "swipeCardHint": "Vuốt phải nếu biết, trái nếu chưa biết",
@@ -144,6 +149,8 @@
     "celebrationMessage": "Chúc mừng! Bạn đã hoàn thành bài học đầu tiên!",
     "levelBadge": "Trình độ của bạn: {{levelLabel}}",
     "goalCard": "Mục tiêu {{label}}: {{description}}",
-    "levelCard": "Trình độ {{label}}: {{description}}"
+    "levelCard": "Trình độ {{label}}: {{description}}",
+    "wordFamilyChipHint": "Nhấn để xem các từ cùng gia đình",
+    "wordFamilyMemberItem": "{{word}}, {{partOfSpeech}}"
   }
 }

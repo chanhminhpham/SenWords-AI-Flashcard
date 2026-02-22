@@ -134,6 +134,11 @@
     "emptyError": "No vocabulary available. Please update the app.",
     "loading": "Preparing your lesson..."
   },
+  "wordFamily": {
+    "chipLabel": "Word family",
+    "sheetTitle": "Word family",
+    "noDefinition": "--"
+  },
   "accessibility": {
     "swipeRight": "Swipe right if you know this word",
     "swipeCardHint": "Swipe right if you know, left if you don't",
@@ -143,6 +148,8 @@
     "levelBadge": "Your level: {{levelLabel}}",
     "goalCard": "Goal {{label}}: {{description}}",
     "levelCard": "Level {{label}}: {{description}}",
+    "wordFamilyChipHint": "Tap to see words in the same family",
+    "wordFamilyMemberItem": "{{word}}, {{partOfSpeech}}",
     "firstSessionTooltip": "Swipe right if you know, left if you don't",
     "celebrationMessage": "Congratulations! You've completed your first lesson!"
   }

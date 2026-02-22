@@ -4,7 +4,14 @@
  */
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
 import type { z } from 'zod';
-import { vocabularyCards, learningEvents, srSchedule, userPreferences } from '@/db/local-schema';
+import {
+  vocabularyCards,
+  learningEvents,
+  srSchedule,
+  userPreferences,
+  wordFamilies,
+  wordFamilyMembers,
+} from '@/db/local-schema';
 
 // ---------------------------------------------------------------------------
 // Zod schemas (generated from Drizzle)
@@ -21,6 +28,12 @@ export const srScheduleInsertSchema = createInsertSchema(srSchedule);
 export const userPreferencesSelectSchema = createSelectSchema(userPreferences);
 export const userPreferencesInsertSchema = createInsertSchema(userPreferences);
 
+export const wordFamilySelectSchema = createSelectSchema(wordFamilies);
+export const wordFamilyInsertSchema = createInsertSchema(wordFamilies);
+
+export const wordFamilyMemberSelectSchema = createSelectSchema(wordFamilyMembers);
+export const wordFamilyMemberInsertSchema = createInsertSchema(wordFamilyMembers);
+
 // ---------------------------------------------------------------------------
 // TypeScript types (inferred from Zod schemas)
 // ---------------------------------------------------------------------------
@@ -35,6 +48,20 @@ export type NewSrSchedule = z.infer<typeof srScheduleInsertSchema>;
 
 export type UserPreferences = z.infer<typeof userPreferencesSelectSchema>;
 export type NewUserPreferences = z.infer<typeof userPreferencesInsertSchema>;
+
+export type WordFamily = z.infer<typeof wordFamilySelectSchema>;
+export type NewWordFamily = z.infer<typeof wordFamilyInsertSchema>;
+
+export type WordFamilyMember = z.infer<typeof wordFamilyMemberSelectSchema>;
+export type NewWordFamilyMember = z.infer<typeof wordFamilyMemberInsertSchema>;
+
+// ---------------------------------------------------------------------------
+// Composite types (manual — joins across tables)
+// ---------------------------------------------------------------------------
+export interface WordFamilyWithMembers {
+  family: WordFamily;
+  members: (WordFamilyMember & { card: VocabularyCard | null })[];
+}
 
 // ---------------------------------------------------------------------------
 // Event type constants

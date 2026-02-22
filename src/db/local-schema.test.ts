@@ -1,5 +1,12 @@
 import { getTableName, getTableColumns } from 'drizzle-orm';
-import { vocabularyCards, learningEvents, srSchedule, userPreferences } from '@/db/local-schema';
+import {
+  vocabularyCards,
+  learningEvents,
+  srSchedule,
+  userPreferences,
+  wordFamilies,
+  wordFamilyMembers,
+} from '@/db/local-schema';
 
 describe('local-schema', () => {
   describe('vocabularyCards table', () => {
@@ -113,6 +120,71 @@ describe('local-schema', () => {
 
     it('has unique constraint on userId', () => {
       expect(userPreferences.userId.isUnique).toBe(true);
+    });
+  });
+
+  describe('wordFamilies table', () => {
+    it('has the correct table name', () => {
+      expect(getTableName(wordFamilies)).toBe('word_families');
+    });
+
+    it('defines all required columns', () => {
+      const columns = getTableColumns(wordFamilies);
+      const columnNames = Object.keys(columns);
+      expect(columnNames).toContain('id');
+      expect(columnNames).toContain('rootWord');
+      expect(columnNames).toContain('createdAt');
+      expect(columnNames).toContain('updatedAt');
+    });
+
+    it('maps column names to snake_case in DB', () => {
+      expect(wordFamilies.rootWord.name).toBe('root_word');
+      expect(wordFamilies.createdAt.name).toBe('created_at');
+      expect(wordFamilies.updatedAt.name).toBe('updated_at');
+    });
+
+    it('has unique constraint on rootWord', () => {
+      expect(wordFamilies.rootWord.isUnique).toBe(true);
+    });
+
+    it('marks rootWord as not null', () => {
+      expect(wordFamilies.rootWord.notNull).toBe(true);
+    });
+  });
+
+  describe('wordFamilyMembers table', () => {
+    it('has the correct table name', () => {
+      expect(getTableName(wordFamilyMembers)).toBe('word_family_members');
+    });
+
+    it('defines all required columns', () => {
+      const columns = getTableColumns(wordFamilyMembers);
+      const columnNames = Object.keys(columns);
+      expect(columnNames).toContain('id');
+      expect(columnNames).toContain('familyId');
+      expect(columnNames).toContain('cardId');
+      expect(columnNames).toContain('wordText');
+      expect(columnNames).toContain('partOfSpeech');
+      expect(columnNames).toContain('formLabel');
+      expect(columnNames).toContain('createdAt');
+    });
+
+    it('maps column names to snake_case in DB', () => {
+      expect(wordFamilyMembers.familyId.name).toBe('family_id');
+      expect(wordFamilyMembers.cardId.name).toBe('card_id');
+      expect(wordFamilyMembers.wordText.name).toBe('word_text');
+      expect(wordFamilyMembers.partOfSpeech.name).toBe('part_of_speech');
+      expect(wordFamilyMembers.formLabel.name).toBe('form_label');
+    });
+
+    it('marks required fields as not null', () => {
+      expect(wordFamilyMembers.familyId.notNull).toBe(true);
+      expect(wordFamilyMembers.wordText.notNull).toBe(true);
+      expect(wordFamilyMembers.partOfSpeech.notNull).toBe(true);
+    });
+
+    it('allows cardId to be nullable', () => {
+      expect(wordFamilyMembers.cardId.notNull).toBe(false);
     });
   });
 });

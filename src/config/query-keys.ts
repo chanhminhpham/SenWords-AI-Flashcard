@@ -21,4 +21,8 @@ export const queryKeys = {
     all: ['preferences'] as const,
     user: (userId: string) => ['preferences', 'user', userId] as const,
   },
+  wordFamily: {
+    all: ['word-family'] as const,
+    byCardId: (cardId: number) => ['word-family', 'byCardId', cardId] as const,
+  },
 } as const;

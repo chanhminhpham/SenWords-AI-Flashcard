@@ -36,8 +36,26 @@ export interface ISrSchedule {
   nextReviewAt: string;
   reviewCount: number;
   accuracy: number;
+  depthLevel: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface IWordFamily {
+  id: number;
+  rootWord: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IWordFamilyMember {
+  id: number;
+  familyId: number;
+  cardId: number | null;
+  wordText: string;
+  partOfSpeech: string;
+  formLabel: string | null;
+  createdAt: string;
 }
 
 export interface IUserPreferences {

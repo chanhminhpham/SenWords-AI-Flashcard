@@ -15,6 +15,13 @@
       "when": 1771561039806,
       "tag": "0001_spicy_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771663944144,
+      "tag": "0002_curvy_sleepwalker",
+      "breakpoints": true
     }
   ]
 }

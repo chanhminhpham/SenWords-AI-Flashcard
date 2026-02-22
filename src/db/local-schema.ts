@@ -78,6 +78,44 @@ export const srSchedule = sqliteTable(
 );
 
 // ---------------------------------------------------------------------------
+// word_families — word family groups sharing the same root
+// ---------------------------------------------------------------------------
+export const wordFamilies = sqliteTable('word_families', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  rootWord: text('root_word').notNull().unique(),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+// ---------------------------------------------------------------------------
+// word_family_members — individual words belonging to a family
+// ---------------------------------------------------------------------------
+export const wordFamilyMembers = sqliteTable(
+  'word_family_members',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    familyId: integer('family_id')
+      .notNull()
+      .references(() => wordFamilies.id),
+    cardId: integer('card_id').references(() => vocabularyCards.id),
+    wordText: text('word_text').notNull(),
+    partOfSpeech: text('part_of_speech').notNull(),
+    formLabel: text('form_label'),
+    createdAt: text('created_at')
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [
+    index('idx_wfm_family_id').on(table.familyId),
+    index('idx_wfm_card_id').on(table.cardId),
+  ]
+);
+
+// ---------------------------------------------------------------------------
 // user_preferences — local device preferences
 // ---------------------------------------------------------------------------
 export const userPreferences = sqliteTable('user_preferences', {
