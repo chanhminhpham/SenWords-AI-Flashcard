@@ -10,8 +10,8 @@ jest.mock('expo-router', () => ({
   router: { replace: jest.fn() },
 }));
 
-jest.mock('expo-auth-session', () => ({
-  makeRedirectUri: jest.fn(() => 'ai-flash-card://redirect'),
+jest.mock('expo-linking', () => ({
+  createURL: jest.fn(() => 'ai-flash-card://redirect'),
 }));
 jest.mock('expo-web-browser');
 

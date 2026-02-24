@@ -1,5 +1,4 @@
-import Constants from 'expo-constants';
-import { makeRedirectUri } from 'expo-auth-session';
+import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 
 import { getSupabase } from '@/services/supabase/client';
@@ -15,15 +14,12 @@ let _redirectUri: string | null = null;
 
 function getRedirectUri(): string {
   if (!_redirectUri) {
-    const isExpoGo = Constants.executionEnvironment === 'storeClient';
-    if (isExpoGo) {
-      // Expo Go: Supabase rejects exp:// scheme, use Expo auth proxy (HTTPS).
-      // The proxy redirects back to exp:// which Expo Go intercepts.
-      _redirectUri = 'https://auth.expo.io/@chanhpham/ai-flash-card';
-    } else {
-      _redirectUri = makeRedirectUri({ scheme: 'ai-flash-card' });
-    }
-    console.log('[AUTH] Redirect URI:', _redirectUri, isExpoGo ? '(Expo Go)' : '(Dev Build)');
+    // Linking.createURL gives the correct native deep link:
+    //   Expo Go  → exp://192.168.x.x:8081/--/redirect
+    //   Dev build → ai-flash-card://redirect
+    // Supabase dashboard must allowlist both patterns under Redirect URLs.
+    _redirectUri = Linking.createURL('redirect');
+    console.log('[AUTH] Redirect URI:', _redirectUri);
   }
   return _redirectUri;
 }

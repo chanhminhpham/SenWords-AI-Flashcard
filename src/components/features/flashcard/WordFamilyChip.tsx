@@ -1,38 +1,34 @@
-import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Chip } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { useWordFamily } from '@/hooks/use-word-family';
 import { useAppTheme } from '@/theme/use-app-theme';
-
-import { WordFamilySheet } from './WordFamilySheet';
+import type { WordFamilyWithMembers } from '@/types/vocabulary';
 
 interface WordFamilyChipProps {
   cardId: number;
+  /** Called when user taps the chip — parent should open the sheet */
+  onOpenSheet?: (data: WordFamilyWithMembers) => void;
 }
 
 /**
  * Subtle "Gia dinh tu" chip on flashcards.
  * Renders null when no family data or still loading.
- * Tapping opens the WordFamilySheet bottom sheet.
+ * Tapping calls onOpenSheet — the sheet must be rendered at the screen
+ * level (outside the card's overflow:hidden Animated.View).
  */
-export function WordFamilyChip({ cardId }: WordFamilyChipProps) {
+export function WordFamilyChip({ cardId, onOpenSheet }: WordFamilyChipProps) {
   const { data, isLoading } = useWordFamily(cardId);
   const { t } = useTranslation();
   const theme = useAppTheme();
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   if (isLoading || !data) {
     return null;
   }
 
   const handlePress = () => {
-    setSheetOpen(true);
-  };
-
-  const handleClose = () => {
-    setSheetOpen(false);
+    onOpenSheet?.(data);
   };
 
   return (
@@ -49,8 +45,6 @@ export function WordFamilyChip({ cardId }: WordFamilyChipProps) {
         textStyle={[styles.chipText, { color: theme.colors.nature.accent }]}>
         {t('wordFamily.chipLabel')}
       </Chip>
-
-      {sheetOpen && <WordFamilySheet data={data} currentCardId={cardId} onClose={handleClose} />}
     </View>
   );
 }

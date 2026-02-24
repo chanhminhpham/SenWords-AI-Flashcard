@@ -50,7 +50,7 @@ export function WordFamilySheet({ data, currentCardId, onClose }: WordFamilyShee
   const renderItem = useCallback(
     ({ item }: { item: WordFamilyWithMembers['members'][number] }) => {
       const isCurrent = item.cardId === currentCardId;
-      const definition = item.card?.definition ?? t('wordFamily.noDefinition');
+      const definition = item.card?.definition ?? item.formLabel ?? t('wordFamily.noDefinition');
 
       return (
         <View

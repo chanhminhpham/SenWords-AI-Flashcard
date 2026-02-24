@@ -100,14 +100,14 @@ describe('WordFamilySheet', () => {
     expect(hapticTapSuccess).toHaveBeenCalled();
   });
 
-  it('shows noDefinition key for members without a linked card', () => {
+  it('falls back to formLabel for members without a linked card', () => {
     const { getAllByTestId, getByText } = render(
       <WordFamilySheet data={mockData} currentCardId={5} onClose={onClose} />
     );
 
     const members = getAllByTestId('word-family-member');
     expect(members[1]).toBeTruthy();
-    // The i18n mock returns the key as-is; noDefinition key should appear
-    expect(getByText('wordFamily.noDefinition')).toBeTruthy();
+    // Member 2 has card: null, so definition falls back to formLabel ("derived")
+    expect(getByText('derived')).toBeTruthy();
   });
 });

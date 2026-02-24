@@ -12,7 +12,9 @@ import { useTranslation } from 'react-i18next';
 
 import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
 import { WordFamilyChip } from '@/components/features/flashcard/WordFamilyChip';
+import { WordFamilySheet } from '@/components/features/flashcard/WordFamilySheet';
 import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
+import type { WordFamilyWithMembers } from '@/types/vocabulary';
 import { useAuthStore } from '@/stores/auth.store';
 import { useLearningEngine } from '@/stores/learning-engine.store';
 import { useAppTheme } from '@/theme';
@@ -49,6 +51,10 @@ export default function LearnScreen() {
   const currentUser = useAuthStore((s) => s.user);
 
   const [showUndo, setShowUndo] = useState(false);
+  const [wordFamilySheet, setWordFamilySheet] = useState<{
+    data: WordFamilyWithMembers;
+    cardId: number;
+  } | null>(null);
   // F10: Only the most recent snapshot is stored. The undo buffer in
   // learning-engine.store enforces single-undo (3-second window, one action),
   // so multiple rapid swipes safely overwrite this — only the latest is undoable.
@@ -246,7 +252,12 @@ export default function LearnScreen() {
           variant="learning"
           onSwipe={handleSwipe}
           allowSwipeUp={false}
-          renderOverlay={(card) => <WordFamilyChip cardId={card.id} />}
+          renderOverlay={(card) => (
+            <WordFamilyChip
+              cardId={card.id}
+              onOpenSheet={(data) => setWordFamilySheet({ data, cardId: card.id })}
+            />
+          )}
         />
       </View>
 
@@ -270,6 +281,15 @@ export default function LearnScreen() {
 
       {/* Undo snackbar */}
       <UndoSnackbar visible={showUndo} onDismiss={() => setShowUndo(false)} onUndo={handleUndo} />
+
+      {/* Word Family bottom sheet — rendered outside card to avoid overflow:hidden clipping */}
+      {wordFamilySheet && (
+        <WordFamilySheet
+          data={wordFamilySheet.data}
+          currentCardId={wordFamilySheet.cardId}
+          onClose={() => setWordFamilySheet(null)}
+        />
+      )}
     </LinearGradient>
   );
 }

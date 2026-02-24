@@ -3,8 +3,8 @@ import { getSupabase } from '@/services/supabase/client';
 import { TRIAL_LIMIT, useAuthStore } from '@/stores/auth.store';
 
 // The getSupabase mock is auto-resolved by jest moduleNameMapper
-jest.mock('expo-auth-session', () => ({
-  makeRedirectUri: jest.fn(() => 'ai-flash-card://redirect'),
+jest.mock('expo-linking', () => ({
+  createURL: jest.fn(() => 'ai-flash-card://redirect'),
 }));
 jest.mock('expo-web-browser');
 

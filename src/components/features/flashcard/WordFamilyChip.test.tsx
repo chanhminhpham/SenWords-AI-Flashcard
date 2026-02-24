@@ -55,9 +55,6 @@ jest.mock('@/theme/use-app-theme', () => ({
   }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-jest.mock('./WordFamilySheet', () => require('@/__test-utils__/word-family-sheet-mock'));
-
 describe('WordFamilyChip', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -84,13 +81,13 @@ describe('WordFamilyChip', () => {
     expect(getByTestId('word-family-chip')).toBeTruthy();
   });
 
-  it('opens sheet on press', () => {
+  it('calls onOpenSheet with family data on press', () => {
     mockUseWordFamily.mockReturnValue({ data: mockData, isLoading: false });
+    const onOpenSheet = jest.fn();
 
-    const { getByTestId, queryByTestId } = render(<WordFamilyChip cardId={5} />);
-    expect(queryByTestId('word-family-sheet')).toBeNull();
+    const { getByTestId } = render(<WordFamilyChip cardId={5} onOpenSheet={onOpenSheet} />);
 
     fireEvent.press(getByTestId('word-family-chip'));
-    expect(getByTestId('word-family-sheet')).toBeTruthy();
+    expect(onOpenSheet).toHaveBeenCalledWith(mockData);
   });
 });
