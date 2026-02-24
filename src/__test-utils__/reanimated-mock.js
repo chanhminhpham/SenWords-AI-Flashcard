@@ -15,5 +15,7 @@ module.exports = {
   withSequence: (...args) => args[0],
   interpolate: (_v, _i, o) => o[1],
   runOnJS: (fn) => fn,
-  Easing: { inOut: (e) => e, ease: 0 },
+  Easing: { inOut: (e) => e, cubic: 0, ease: 0 },
+  FadeIn: { duration: () => undefined },
+  FadeOut: { duration: () => undefined },
 };

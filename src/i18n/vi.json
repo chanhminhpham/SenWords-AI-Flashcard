@@ -121,7 +121,27 @@
     "encouragement": {
       "left": "Gặp lại sớm!",
       "right": "Tuyệt vời! ✨"
+    },
+    "hint": {
+      "swipeUp": "Vuốt lên để khám phá sâu hơn ↑",
+      "swipeUpA11y": "Mẹo mới: bạn có thể vuốt lên để xem chi tiết từ vựng"
     }
+  },
+  "detail": {
+    "header": "Chi tiết từ vựng",
+    "tab": {
+      "recognition": "Nhận diện",
+      "association": "Liên kết",
+      "production": "Sản xuất",
+      "application": "Ứng dụng"
+    },
+    "empty": "Nội dung đang được chuẩn bị 🌱",
+    "back": "Quay lại danh sách học",
+    "tabContent": "{{count}} nội dung",
+    "depth": "Tầng {{level}}",
+    "imagePlaceholder": "Hình ảnh sẽ có sớm 🌿",
+    "audioPlaceholder": "Sắp có 🎧",
+    "depthProgress": "Tiến trình tầng {{current}} / 4"
   },
   "firstSession": {
     "tooltip": "👉 Phải = Biết, 👈 Trái = Chưa biết",

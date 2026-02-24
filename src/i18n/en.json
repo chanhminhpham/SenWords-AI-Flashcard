@@ -121,7 +121,27 @@
     "encouragement": {
       "left": "See you soon!",
       "right": "Great job! ✨"
+    },
+    "hint": {
+      "swipeUp": "Swipe up to explore deeper ↑",
+      "swipeUpA11y": "New tip: you can swipe up to view word details"
     }
+  },
+  "detail": {
+    "header": "Word Details",
+    "tab": {
+      "recognition": "Recognition",
+      "association": "Association",
+      "production": "Production",
+      "application": "Application"
+    },
+    "empty": "Content coming soon 🌱",
+    "back": "Back to learning list",
+    "tabContent": "{{count}} items",
+    "depth": "Layer {{level}}",
+    "imagePlaceholder": "Images coming soon 🌿",
+    "audioPlaceholder": "Coming soon 🎧",
+    "depthProgress": "Depth progress {{current}} / 4"
   },
   "firstSession": {
     "tooltip": "👉 Right = Know, 👈 Left = Don't know",

@@ -47,3 +47,9 @@ export function hapticLevelUp(): void {
   if (shouldReduceAnimations()) return;
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 }
+
+/** Medium impact — explore / swipe-up to detail view */
+export function hapticExplore(): void {
+  if (shouldReduceAnimations()) return;
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+}

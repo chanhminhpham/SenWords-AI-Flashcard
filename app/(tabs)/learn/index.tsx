@@ -1,7 +1,8 @@
-// Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6 → 1.7)
+// Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6 → 2.2)
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -13,9 +14,15 @@ import { useTranslation } from 'react-i18next';
 import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
 import { WordFamilyChip } from '@/components/features/flashcard/WordFamilyChip';
 import { WordFamilySheet } from '@/components/features/flashcard/WordFamilySheet';
+import { DiscoveryTooltip } from '@/components/ui/DiscoveryTooltip';
 import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
+import { getFeatureUnlockState } from '@/constants/onboarding';
+import { hapticExplore } from '@/services/haptics';
+import { fetchUserLevel } from '@/services/vocabulary/vocabulary.service';
 import type { WordFamilyWithMembers } from '@/types/vocabulary';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/stores/auth.store';
+import { useAppStore } from '@/stores/app.store';
 import { useLearningEngine } from '@/stores/learning-engine.store';
 import { useAppTheme } from '@/theme';
 import {
@@ -62,9 +69,36 @@ export default function LearnScreen() {
   const [lastIsFirstReview, setLastIsFirstReview] = useState(false);
   // F1: Use ref instead of state to avoid infinite re-render loop
   const prefetchedRef = useRef<Set<number>>(new Set());
+  // Story 2.2: Cache card resting bounds for card-expand transition
+  const cardBoundsRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const cardViewRef = useRef<View>(null);
+  const deviceTier = useAppStore((s) => s.deviceTier);
 
   const { loadQueue, recordSwipe, undoLastSwipe, getCurrentCard, getQueueProgress, undoBuffer } =
     useLearningEngine();
+
+  // Story 2.2: Fetch user level to determine swipe-up unlock
+  const { data: userLevel } = useQuery({
+    queryKey: ['user-level', currentUser?.id],
+    queryFn: () => fetchUserLevel(currentUser?.id ?? ''),
+    enabled: !!currentUser?.id,
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+
+  const swipeUpEnabled = getFeatureUnlockState(userLevel ?? 0).swipeUpEnabled;
+
+  // Story 2.2: Discovery hint for first-time swipe-up
+  const [showSwipeUpHint, setShowSwipeUpHint] = useState(false);
+
+  useEffect(() => {
+    if (swipeUpEnabled) {
+      AsyncStorage.getItem('hint_swipe_up_shown').then((value) => {
+        if (value !== 'true') {
+          setShowSwipeUpHint(true);
+        }
+      });
+    }
+  }, [swipeUpEnabled]);
 
   // Fetch SR queue from SQLite via real SM-2 queue logic
   const { data: srQueueResult, isLoading } = useQuery({
@@ -91,10 +125,42 @@ export default function LearnScreen() {
   const currentCard = getCurrentCard();
   const { current, total } = getQueueProgress();
 
+  // Story 2.2: Handle swipe-up to navigate to detail view
+  const handleSwipeUp = useCallback(
+    (cardId: number) => {
+      hapticExplore();
+      if (deviceTier === 'standard') {
+        const { x, y, width, height } = cardBoundsRef.current;
+        router.push({
+          pathname: '/(tabs)/learn/[cardId]',
+          params: {
+            cardId: String(cardId),
+            originX: String(x),
+            originY: String(y),
+            originW: String(width),
+            originH: String(height),
+          },
+        });
+      } else {
+        router.push({
+          pathname: '/(tabs)/learn/[cardId]',
+          params: { cardId: String(cardId) },
+        });
+      }
+    },
+    [deviceTier]
+  );
+
   // Handle swipe action
   const handleSwipe = useCallback(
     (cardId: number, direction: 'left' | 'right' | 'up') => {
       if (!currentUser?.id) return;
+
+      // Story 2.2: Swipe-up navigates to detail — don't record as review
+      if (direction === 'up') {
+        handleSwipeUp(cardId);
+        return;
+      }
 
       try {
         // Record swipe in store (advances to next card, sets undo buffer)
@@ -132,7 +198,7 @@ export default function LearnScreen() {
         setShowUndo(true);
       }
     },
-    [currentUser, recordSwipe]
+    [currentUser, recordSwipe, handleSwipeUp]
   );
 
   // Handle undo
@@ -244,14 +310,34 @@ export default function LearnScreen() {
         </View>
       )}
 
+      {/* Story 2.2: Discovery hint for swipe-up */}
+      {showSwipeUpHint && (
+        <View style={{ position: 'absolute', top: insets.top + 80, left: 0, right: 0, zIndex: 20 }}>
+          <DiscoveryTooltip
+            message={t('learn.hint.swipeUp')}
+            a11yMessage={t('learn.hint.swipeUpA11y')}
+            storageKey="hint_swipe_up_shown"
+            visible={showSwipeUpHint}
+            onDismiss={() => setShowSwipeUpHint(false)}
+          />
+        </View>
+      )}
+
       {/* Flashcard stack */}
-      <View style={styles.cardContainer}>
+      <View
+        style={styles.cardContainer}
+        ref={cardViewRef}
+        onLayout={() => {
+          cardViewRef.current?.measureInWindow((x, y, width, height) => {
+            cardBoundsRef.current = { x, y, width, height };
+          });
+        }}>
         <BaseSwipeCard
           key={currentCard.id}
           card={currentCard}
           variant="learning"
           onSwipe={handleSwipe}
-          allowSwipeUp={false}
+          allowSwipeUp={swipeUpEnabled}
           renderOverlay={(card) => (
             <WordFamilyChip
               cardId={card.id}
