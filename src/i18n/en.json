@@ -141,7 +141,9 @@
     "depth": "Layer {{level}}",
     "imagePlaceholder": "Images coming soon 🌿",
     "audioPlaceholder": "Coming soon 🎧",
-    "depthProgress": "Depth progress {{current}} / 4"
+    "depthProgress": "Depth progress {{current}} / 4",
+    "loadError": "Failed to load vocabulary data",
+    "cardNotFound": "Card not found"
   },
   "firstSession": {
     "tooltip": "👉 Right = Know, 👈 Left = Don't know",

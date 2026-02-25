@@ -1,14 +1,13 @@
 // Learn Screen — Core learning loop with flashcard swipe interaction (Story 1.6 → 2.2)
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { Text } from 'react-native-paper';
-
 import { useTranslation } from 'react-i18next';
 
 import { BaseSwipeCard } from '@/components/features/flashcard/BaseSwipeCard';
@@ -18,13 +17,6 @@ import { DiscoveryTooltip } from '@/components/ui/DiscoveryTooltip';
 import { UndoSnackbar } from '@/components/ui/UndoSnackbar';
 import { getFeatureUnlockState } from '@/constants/onboarding';
 import { hapticExplore } from '@/services/haptics';
-import { fetchUserLevel } from '@/services/vocabulary/vocabulary.service';
-import type { WordFamilyWithMembers } from '@/types/vocabulary';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore } from '@/stores/auth.store';
-import { useAppStore } from '@/stores/app.store';
-import { useLearningEngine } from '@/stores/learning-engine.store';
-import { useAppTheme } from '@/theme';
 import {
   adjustSchedule,
   logLearningEvent,
@@ -34,6 +26,12 @@ import {
   BURNOUT_WARNING_THRESHOLD,
   type ScheduleSnapshot,
 } from '@/services/sr/sr.service';
+import { fetchUserLevel } from '@/services/vocabulary/vocabulary.service';
+import { useAuthStore } from '@/stores/auth.store';
+import { useAppStore } from '@/stores/app.store';
+import { useLearningEngine } from '@/stores/learning-engine.store';
+import { useAppTheme } from '@/theme';
+import type { WordFamilyWithMembers } from '@/types/vocabulary';
 
 // Nature Path gradient: light green → warm → white
 const GRADIENT_COLORS = ['#E8F4ED', '#FFF8F0', '#FFFFFF'] as const;
@@ -324,27 +322,28 @@ export default function LearnScreen() {
       )}
 
       {/* Flashcard stack */}
-      <View
-        style={styles.cardContainer}
-        ref={cardViewRef}
-        onLayout={() => {
-          cardViewRef.current?.measureInWindow((x, y, width, height) => {
-            cardBoundsRef.current = { x, y, width, height };
-          });
-        }}>
-        <BaseSwipeCard
-          key={currentCard.id}
-          card={currentCard}
-          variant="learning"
-          onSwipe={handleSwipe}
-          allowSwipeUp={swipeUpEnabled}
-          renderOverlay={(card) => (
-            <WordFamilyChip
-              cardId={card.id}
-              onOpenSheet={(data) => setWordFamilySheet({ data, cardId: card.id })}
-            />
-          )}
-        />
+      <View style={styles.cardContainer}>
+        <View
+          ref={cardViewRef}
+          onLayout={() => {
+            cardViewRef.current?.measureInWindow((x, y, width, height) => {
+              cardBoundsRef.current = { x, y, width, height };
+            });
+          }}>
+          <BaseSwipeCard
+            key={currentCard.id}
+            card={currentCard}
+            variant="learning"
+            onSwipe={handleSwipe}
+            allowSwipeUp={swipeUpEnabled}
+            renderOverlay={(card) => (
+              <WordFamilyChip
+                cardId={card.id}
+                onOpenSheet={(data) => setWordFamilySheet({ data, cardId: card.id })}
+              />
+            )}
+          />
+        </View>
       </View>
 
       {/* Progress dots + journey text */}

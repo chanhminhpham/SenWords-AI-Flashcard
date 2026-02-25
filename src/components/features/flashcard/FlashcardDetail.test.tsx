@@ -240,4 +240,14 @@ describe('FlashcardDetail', () => {
     await findAllByText('environment');
     expect(queryByText('/ɪnˈvaɪrənmənt/')).toBeNull();
   });
+
+  it('renders error state when data fetch fails', async () => {
+    mockFetchCardById.mockImplementation(() => {
+      throw new Error('Network error');
+    });
+
+    const { findByText } = renderWithProviders(<FlashcardDetail cardId={999} />);
+
+    expect(await findByText('detail.loadError')).toBeTruthy();
+  });
 });

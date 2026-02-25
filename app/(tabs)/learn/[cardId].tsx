@@ -92,7 +92,7 @@ export default function FlashcardDetailScreen() {
   if (isNaN(numericId) || numericId <= 0) {
     return (
       <View style={[styles.errorContainer, { backgroundColor: theme.colors.background }]}>
-        <Text style={{ color: theme.colors.onSurfaceVariant }}>Card not found</Text>
+        <Text style={{ color: theme.colors.onSurfaceVariant }}>{t('detail.cardNotFound')}</Text>
       </View>
     );
   }

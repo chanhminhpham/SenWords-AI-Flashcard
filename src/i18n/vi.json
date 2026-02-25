@@ -141,7 +141,9 @@
     "depth": "Tầng {{level}}",
     "imagePlaceholder": "Hình ảnh sẽ có sớm 🌿",
     "audioPlaceholder": "Sắp có 🎧",
-    "depthProgress": "Tiến trình tầng {{current}} / 4"
+    "depthProgress": "Tiến trình tầng {{current}} / 4",
+    "loadError": "Không thể tải dữ liệu từ vựng",
+    "cardNotFound": "Không tìm thấy thẻ từ vựng"
   },
   "firstSession": {
     "tooltip": "👉 Phải = Biết, 👈 Trái = Chưa biết",

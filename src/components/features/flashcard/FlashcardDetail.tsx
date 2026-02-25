@@ -1,6 +1,6 @@
 // FlashcardDetail — 4-layer depth exploration tabbed view (Story 2.2)
 // This is the SHELL component. Stories 2.3-2.7 populate tab content.
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from 'react-native-paper';
@@ -38,18 +38,39 @@ type TabRoute = {
   title: string;
 };
 
+/** Highlight occurrences of `word` within `sentence` using the given color. */
+function highlightWord(sentence: string, word: string, color: string): React.ReactNode {
+  const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'i');
+  const parts = sentence.split(regex);
+  if (parts.length === 1) return sentence;
+  return parts.map((part, i) =>
+    regex.test(part) ? (
+      <Text key={i} style={{ color, fontWeight: '700' }}>
+        {part}
+      </Text>
+    ) : (
+      part
+    )
+  );
+}
+
 // ─── Main Component ─────────────────────────────────────────
 export function FlashcardDetail({ cardId }: FlashcardDetailProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const deviceTier = useAppStore((s) => s.deviceTier);
+  const reduceMotion = useAppStore((s) => s.shouldReduceMotion());
   const currentUser = useAuthStore((s) => s.user);
 
   const [tabIndex, setTabIndex] = useState(0);
 
   // ─── Data fetching (TanStack Query — per-tab pattern) ───
-  const { data: card, isLoading: cardLoading } = useQuery({
+  const {
+    data: card,
+    isLoading: cardLoading,
+    isError: cardError,
+  } = useQuery({
     queryKey: ['card', cardId],
     queryFn: () => fetchCardById(cardId),
     staleTime: 1000 * 60 * 5,
@@ -87,6 +108,31 @@ export function FlashcardDetail({ cardId }: FlashcardDetailProps) {
 
   const isWideLayout = width >= TABLET_BREAKPOINT_PX;
 
+  // Tab content counts for a11y (AC7: "Tab [name]: [N] nội dung")
+  const tabContentCounts: Record<string, number> = useMemo(
+    () => ({
+      recognition: card ? 1 : 0,
+      association: 0,
+      production: 0,
+      application: 0,
+    }),
+    [card]
+  );
+
+  // Tab options with a11y labels (AC7: "Tab [name]: [N] nội dung")
+  const tabOptions = useMemo(
+    () =>
+      Object.fromEntries(
+        routes.map((route) => [
+          route.key,
+          {
+            accessibilityLabel: `${route.title}: ${t('detail.tabContent', { count: tabContentCounts[route.key] ?? 0 })}`,
+          },
+        ])
+      ) as Record<string, { accessibilityLabel: string }>,
+    [routes, tabContentCounts, t]
+  );
+
   // ─── Tab Bar ────────────────────────────────────────────
   const renderTabBar = (props: TabBarProps<TabRoute>) => (
     <TabBar
@@ -96,6 +142,7 @@ export function FlashcardDetail({ cardId }: FlashcardDetailProps) {
       activeColor={depthColors[tabIndex]}
       inactiveColor={theme.colors.onSurfaceVariant}
       style={{ backgroundColor: theme.colors.surface }}
+      options={tabOptions}
     />
   );
 
@@ -109,12 +156,15 @@ export function FlashcardDetail({ cardId }: FlashcardDetailProps) {
             depthLevel={depthLevel}
             isLoading={cardLoading}
             deviceTier={deviceTier}
+            reduceMotion={reduceMotion}
           />
         );
       case 'association':
       case 'production':
       case 'application':
-        return <PlaceholderTab tabKey={route.key} deviceTier={deviceTier} />;
+        return (
+          <PlaceholderTab tabKey={route.key} deviceTier={deviceTier} reduceMotion={reduceMotion} />
+        );
       default:
         return null;
     }
@@ -178,6 +228,17 @@ export function FlashcardDetail({ cardId }: FlashcardDetailProps) {
     />
   );
 
+  // ─── Error state ───────────────────────────────────────
+  if (cardError) {
+    return (
+      <View
+        testID="flashcard-detail"
+        style={[styles.errorState, { backgroundColor: theme.colors.background }]}>
+        <Text style={{ color: theme.colors.error }}>{t('detail.loadError')}</Text>
+      </View>
+    );
+  }
+
   // ─── Tablet split layout ────────────────────────────────
   if (isWideLayout) {
     return (
@@ -214,16 +275,23 @@ interface RecognitionTabProps {
   depthLevel: number;
   isLoading: boolean;
   deviceTier: string;
+  reduceMotion: boolean;
 }
 
-function RecognitionTab({ card, depthLevel, isLoading, deviceTier }: RecognitionTabProps) {
+const RecognitionTab = React.memo(function RecognitionTab({
+  card,
+  depthLevel,
+  isLoading,
+  deviceTier,
+  reduceMotion,
+}: RecognitionTabProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
-  const gradientColors: [string, string] =
-    deviceTier === 'budget'
-      ? [theme.colors.surface, theme.colors.surface]
-      : [theme.colors.surface, theme.colors.depth.layer1 + TAB_GRADIENT_OPACITY];
+  const useSimpleBackground = deviceTier === 'budget' || reduceMotion;
+  const gradientColors: [string, string] = useSimpleBackground
+    ? [theme.colors.surface, theme.colors.surface]
+    : [theme.colors.surface, theme.colors.depth.layer1 + TAB_GRADIENT_OPACITY];
 
   if (isLoading) {
     return (
@@ -262,11 +330,11 @@ function RecognitionTab({ card, depthLevel, isLoading, deviceTier }: Recognition
         </Text>
       </View>
 
-      {/* Example sentence */}
+      {/* Example sentence — word highlighted in depth.layer1 */}
       {card.exampleSentence && (
         <View accessible={true} accessibilityLabel={card.exampleSentence}>
           <Text style={[styles.recExample, { color: theme.colors.onSurfaceVariant }]}>
-            {card.exampleSentence}
+            {highlightWord(card.exampleSentence, card.word, theme.colors.depth.layer1)}
           </Text>
         </View>
       )}
@@ -330,15 +398,20 @@ function RecognitionTab({ card, depthLevel, isLoading, deviceTier }: Recognition
       </View>
     </LinearGradient>
   );
-}
+});
 
 // ─── PlaceholderTab (Tabs 2-4) ──────────────────────────────
 interface PlaceholderTabProps {
   tabKey: string;
   deviceTier: string;
+  reduceMotion: boolean;
 }
 
-function PlaceholderTab({ tabKey, deviceTier }: PlaceholderTabProps) {
+const PlaceholderTab = React.memo(function PlaceholderTab({
+  tabKey,
+  deviceTier,
+  reduceMotion,
+}: PlaceholderTabProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
@@ -348,10 +421,10 @@ function PlaceholderTab({ tabKey, deviceTier }: PlaceholderTabProps) {
     application: theme.colors.depth.layer4,
   };
 
-  const gradientColors: [string, string] =
-    deviceTier === 'budget'
-      ? [theme.colors.surface, theme.colors.surface]
-      : [theme.colors.surface, (colorMap[tabKey] ?? theme.colors.surface) + TAB_GRADIENT_OPACITY];
+  const useSimpleBg = deviceTier === 'budget' || reduceMotion;
+  const gradientColors: [string, string] = useSimpleBg
+    ? [theme.colors.surface, theme.colors.surface]
+    : [theme.colors.surface, (colorMap[tabKey] ?? theme.colors.surface) + TAB_GRADIENT_OPACITY];
 
   return (
     <LinearGradient
@@ -363,12 +436,17 @@ function PlaceholderTab({ tabKey, deviceTier }: PlaceholderTabProps) {
       </Text>
     </LinearGradient>
   );
-}
+});
 
 // ─── Styles ─────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  errorState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   splitContainer: {
     flex: 1,
@@ -416,11 +494,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   // Tab
-  tabLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'none',
-  },
   tabContent: {
     flex: 1,
     padding: 20,

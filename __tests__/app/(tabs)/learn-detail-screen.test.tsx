@@ -113,17 +113,17 @@ describe('FlashcardDetailScreen', () => {
 
   it('shows error state for invalid cardId', () => {
     const { getByText } = renderScreen({ cardId: 'abc' });
-    expect(getByText('Card not found')).toBeTruthy();
+    expect(getByText('detail.cardNotFound')).toBeTruthy();
   });
 
   it('shows error state for cardId = 0', () => {
     const { getByText } = renderScreen({ cardId: '0' });
-    expect(getByText('Card not found')).toBeTruthy();
+    expect(getByText('detail.cardNotFound')).toBeTruthy();
   });
 
   it('shows error state for negative cardId', () => {
     const { getByText } = renderScreen({ cardId: '-1' });
-    expect(getByText('Card not found')).toBeTruthy();
+    expect(getByText('detail.cardNotFound')).toBeTruthy();
   });
 
   it('renders tab view from FlashcardDetail', async () => {
