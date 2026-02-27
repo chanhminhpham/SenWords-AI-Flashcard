@@ -84,11 +84,20 @@ export function BaseSwipeCard({
 
   const handleSwipeComplete = useCallback(
     (direction: SwipeDirection) => {
-      setIsComplete(true);
+      // Swipe-up navigates to detail but keeps the card in queue —
+      // don't mark complete so it re-appears when user returns.
+      if (direction !== 'up') {
+        setIsComplete(true);
+      }
       hapticSwipeComplete();
       onSwipe(card.id, direction);
+      if (direction === 'up') {
+        // Reset position so card is visible when user navigates back
+        translateX.value = 0;
+        translateY.value = 0;
+      }
     },
-    [onSwipe, card.id]
+    [onSwipe, card.id, translateX, translateY]
   );
 
   const pan = Gesture.Pan()
