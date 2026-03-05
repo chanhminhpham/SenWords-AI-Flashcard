@@ -1,13 +1,23 @@
 module.exports = function (api) {
   api.cache(true);
-  let plugins = [];
-
-  plugins.push('react-native-worklets/plugin');
-  plugins.push(['inline-import', { extensions: ['.sql'] }]);
+  const plugins = ['react-native-worklets/plugin', ['inline-import', { extensions: ['.sql'] }]];
 
   return {
-    presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
-
-    plugins,
+    // Use overrides to conditionally apply NativeWind.
+    // __test-utils__/ mock files must NOT get NativeWind transform —
+    // otherwise React.createElement inside mocks triggers a circular
+    // dependency with the react-native-css-interop moduleNameMapper.
+    overrides: [
+      {
+        test: /\/__test-utils__\//,
+        presets: ['babel-preset-expo'],
+        plugins,
+      },
+      {
+        exclude: /\/__test-utils__\//,
+        presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
+        plugins,
+      },
+    ],
   };
 };

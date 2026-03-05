@@ -36,6 +36,13 @@ export const LIGHT_COLORS = {
     layer3: '#9B72CF', // Production (purple)
     layer4: '#F5A623', // Application (orange)
   },
+  wordMap: {
+    root: '#4A9FE5', // Primary blue — center/root word
+    family: '#4ECBA0', // Nature green — family members
+    synonym: '#E8739E', // Lotus pink — synonyms
+    related: '#9E9E9E', // Neutral gray — related words
+    nodeText: '#FFFFFF', // White text on colored node circles
+  },
   background: '#FFFFFF',
   surface: '#F5F7FA', // Section dividers, inactive areas
   textPrimary: '#1A1D23', // Body text, headings (15.4:1 on white)
@@ -78,6 +85,13 @@ export const DARK_COLORS = {
     layer2: '#6BB5F0',
     layer3: '#B99ADE',
     layer4: '#F0B848',
+  },
+  wordMap: {
+    root: '#6BB5F0', // Brighter blue for dark bg
+    family: '#3DAA72', // Brighter green for dark bg
+    synonym: '#F0A0BE', // Softer pink for dark bg
+    related: '#757575', // Muted gray for dark bg
+    nodeText: '#FFFFFF', // White text on colored node circles
   },
   background: '#1A2318', // Deep forest (NOT pure dark)
   surface: '#243028', // Cards, subtle green tint

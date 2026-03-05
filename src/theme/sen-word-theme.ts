@@ -34,6 +34,13 @@ export interface SenWordTheme extends MD3Theme {
     lotus: {
       pink: string;
     };
+    wordMap: {
+      root: string;
+      family: string;
+      synonym: string;
+      related: string;
+      nodeText: string;
+    };
   };
   spacing: {
     xs: number;
@@ -120,6 +127,13 @@ export const senWordLightTheme: SenWordTheme = {
     },
     lotus: {
       pink: LIGHT_COLORS.lotus.pink,
+    },
+    wordMap: {
+      root: LIGHT_COLORS.wordMap.root,
+      family: LIGHT_COLORS.wordMap.family,
+      synonym: LIGHT_COLORS.wordMap.synonym,
+      related: LIGHT_COLORS.wordMap.related,
+      nodeText: LIGHT_COLORS.wordMap.nodeText,
     },
   },
   spacing: {

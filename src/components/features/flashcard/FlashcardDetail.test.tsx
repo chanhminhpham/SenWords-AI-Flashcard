@@ -35,6 +35,21 @@ jest.mock('@/services/vocabulary/vocabulary.service', () => ({
   fetchScheduleByCardId: (...args: unknown[]) => mockFetchScheduleByCardId(...args),
 }));
 
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn() },
+}));
+
+jest.mock('@/components/features/word-map/WordMapView', () => ({
+  WordMapView: ({ cardId, mode }: { cardId: number; mode: string }) => {
+    const { View, Text } = require('react-native');
+    return require('react').createElement(
+      View,
+      { testID: 'word-map-view-mock' },
+      require('react').createElement(Text, null, `word-map-${mode}-${cardId}`)
+    );
+  },
+}));
+
 jest.mock('@/components/ui/KnowledgeDot', () => ({
   KnowledgeDot: ({ depthLevel }: { depthLevel: number }) => {
     const { View, Text } = require('react-native');

@@ -64,6 +64,29 @@ export interface WordFamilyWithMembers {
 }
 
 // ---------------------------------------------------------------------------
+// Word Map types (Story 2.3 — visual relationship graph)
+// ---------------------------------------------------------------------------
+export type WordMapNodeType = 'root' | 'family' | 'synonym' | 'related';
+
+export interface WordMapNode {
+  id: string;
+  word: string;
+  type: WordMapNodeType;
+  cardId: number | null;
+  partOfSpeech?: string;
+  formLabel?: string | null;
+  // d3-force mutates these during simulation
+  x?: number;
+  y?: number;
+}
+
+export interface WordMapLink {
+  source: string;
+  target: string;
+  label: string | null;
+}
+
+// ---------------------------------------------------------------------------
 // Event type constants
 // ---------------------------------------------------------------------------
 export const LEARNING_EVENT_TYPES = {

@@ -40,6 +40,13 @@ module.exports = {
         borderError: '#E57373',
         placeholder: '#9CA3AF',
       },
+      wordMap: {
+        root: '#4A9FE5',
+        family: '#4ECBA0',
+        synonym: '#E8739E',
+        related: '#9E9E9E',
+        nodeText: '#FFFFFF',
+      },
       secondaryContainer: '#D6EBFA',
       tertiaryContainer: '#FCE4EC',
     },
