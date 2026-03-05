@@ -78,7 +78,11 @@ export default function WordMapScreen() {
       testID="word-map-screen"
       style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.surface, paddingTop: insets.top + 12 }]}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: theme.colors.surface, paddingTop: insets.top + 12 },
+        ]}>
         <Pressable
           testID="word-map-back"
           onPress={() => router.back()}

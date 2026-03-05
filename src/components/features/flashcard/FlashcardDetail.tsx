@@ -11,7 +11,10 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { KnowledgeDot } from '@/components/ui/KnowledgeDot';
+import { MicroStoryCard } from '@/components/features/micro-story/MicroStoryCard';
 import { WordMapView } from '@/components/features/word-map/WordMapView';
+import { useMicroStories } from '@/hooks/use-micro-stories';
+import { useWordFamily } from '@/hooks/use-word-family';
 import { fetchCardById, fetchScheduleByCardId } from '@/services/vocabulary/vocabulary.service';
 import { useAppStore } from '@/stores/app.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -420,6 +423,10 @@ const AssociationTab = React.memo(function AssociationTab({
   const theme = useAppTheme();
   const { t } = useTranslation();
 
+  const { data: wordFamily } = useWordFamily(cardId);
+  const familyId = wordFamily?.family.id;
+  const { data: stories } = useMicroStories(familyId);
+
   const useSimpleBg = deviceTier === 'budget' || reduceMotion;
   const gradientColors: [string, string] = useSimpleBg
     ? [theme.colors.surface, theme.colors.surface]
@@ -436,12 +443,17 @@ const AssociationTab = React.memo(function AssociationTab({
           {t('wordMap.fullMapLink')}
         </Text>
       </Pressable>
-      {/* Micro-stories placeholder (Story 2.4 fills this) */}
-      <View style={[styles.placeholder, { borderColor: theme.colors.surface }]}>
-        <Text style={{ color: theme.colors.onSurfaceVariant }}>
-          {t('wordMap.microStoriesPlaceholder')}
+      {/* Micro-stories section */}
+      <Text style={[styles.sectionHeading, { color: theme.colors.onSurface }]}>
+        {t('microStory.heading')}
+      </Text>
+      {stories && stories.length > 0 ? (
+        stories.map((story) => <MicroStoryCard key={story.id} story={story} />)
+      ) : (
+        <Text style={[styles.emptyText, { color: theme.colors.onSurfaceVariant }]}>
+          {t('microStory.empty')}
         </Text>
-      </View>
+      )}
     </LinearGradient>
   );
 });
@@ -625,6 +637,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  // Micro-stories section
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontStyle: 'italic',
   },
   // Placeholder tab
   placeholderContainer: {

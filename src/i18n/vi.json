@@ -171,6 +171,16 @@
       "notInDictionary": "{{word}}, {{pos}} — chưa có trong từ điển"
     }
   },
+  "microStory": {
+    "heading": "Câu chuyện",
+    "tapHint": "Nhấn từ bôi đậm để xem chi tiết",
+    "empty": "Chưa có câu chuyện",
+    "a11y": {
+      "wordLink": "{{word}}, {{pos}}: {{definition}}",
+      "tooltip": "Chú thích cho từ {{word}}",
+      "dismissTooltip": "Đóng chú thích"
+    }
+  },
   "wordFamily": {
     "chipLabel": "Gia đình từ",
     "sheetTitle": "Gia đình từ",

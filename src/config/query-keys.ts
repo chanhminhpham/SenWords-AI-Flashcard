@@ -25,4 +25,8 @@ export const queryKeys = {
     all: ['word-family'] as const,
     byCardId: (cardId: number) => ['word-family', 'byCardId', cardId] as const,
   },
+  microStories: {
+    all: ['micro-stories'] as const,
+    byFamilyId: (familyId: number) => ['micro-stories', 'byFamilyId', familyId] as const,
+  },
 } as const;

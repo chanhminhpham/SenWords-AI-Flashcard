@@ -5,13 +5,21 @@ const { View } = require('react-native');
 // Fluent chainable gesture builder — every method returns the builder itself
 function gestureBuilder() {
   const builder = {};
-  ['onUpdate', 'onEnd', 'onStart', 'onFinalize', 'minDistance', 'enabled', 'numberOfTaps'].forEach(
-    function (m) {
-      builder[m] = function () {
-        return builder;
-      };
-    }
-  );
+  [
+    'onUpdate',
+    'onEnd',
+    'onStart',
+    'onFinalize',
+    'minDistance',
+    'enabled',
+    'numberOfTaps',
+    'activeOffsetY',
+    'activeOffsetX',
+  ].forEach(function (m) {
+    builder[m] = function () {
+      return builder;
+    };
+  });
   return builder;
 }
 

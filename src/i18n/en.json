@@ -171,6 +171,16 @@
       "notInDictionary": "{{word}}, {{pos}} — not in dictionary"
     }
   },
+  "microStory": {
+    "heading": "Stories",
+    "tapHint": "Tap highlighted words for details",
+    "empty": "No stories available yet",
+    "a11y": {
+      "wordLink": "{{word}}, {{pos}}: {{definition}}",
+      "tooltip": "Definition tooltip for {{word}}",
+      "dismissTooltip": "Dismiss tooltip"
+    }
+  },
   "wordFamily": {
     "chipLabel": "Word family",
     "sheetTitle": "Word family",

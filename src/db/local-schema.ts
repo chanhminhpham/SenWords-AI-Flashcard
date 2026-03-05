@@ -116,6 +116,37 @@ export const wordFamilyMembers = sqliteTable(
 );
 
 // ---------------------------------------------------------------------------
+// micro_stories — short context stories for word families
+// ---------------------------------------------------------------------------
+export const microStories = sqliteTable(
+  'micro_stories',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    familyId: integer('family_id')
+      .notNull()
+      .references(() => wordFamilies.id),
+    storyText: text('story_text').notNull(),
+    highlightedWords: text('highlighted_words', { mode: 'json' })
+      .$type<
+        {
+          wordText: string;
+          startIndex: number;
+          endIndex: number;
+          definition: string;
+          partOfSpeech: string;
+        }[]
+      >()
+      .notNull()
+      .default([]),
+    difficultyLevel: integer('difficulty_level').notNull().default(1),
+    createdAt: text('created_at')
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [index('idx_micro_stories_family_id').on(table.familyId)]
+);
+
+// ---------------------------------------------------------------------------
 // user_preferences — local device preferences
 // ---------------------------------------------------------------------------
 export const userPreferences = sqliteTable('user_preferences', {

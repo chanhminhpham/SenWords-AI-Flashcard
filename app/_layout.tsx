@@ -38,6 +38,7 @@ import { useDatabase } from '@/db/use-database';
 import { initI18n } from '@/i18n';
 import { useDeviceTier } from '@/hooks/use-device-tier';
 import { loadDictionary } from '@/services/dictionary/dictionary.service';
+import { loadMicroStories } from '@/services/dictionary/micro-story.service';
 import { loadWordFamilies } from '@/services/dictionary/word-family.service';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
@@ -113,6 +114,14 @@ function RootLayout() {
           if (result && !result.success) {
             Sentry.captureMessage(`Word family load failed: ${result.error}`, {
               tags: { module: 'word-family-loading' },
+            });
+          }
+          return loadMicroStories();
+        })
+        .then((result) => {
+          if (result && !result.success) {
+            Sentry.captureMessage(`Micro-story load failed: ${result.error}`, {
+              tags: { module: 'micro-story-loading' },
             });
           }
         })

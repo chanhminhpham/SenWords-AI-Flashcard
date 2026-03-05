@@ -1,7 +1,7 @@
 // FlashcardDetail Screen — Depth exploration view (Story 2.2)
 // Hybrid card-expand transition: standard = interpolation, budget = FadeIn
 import { useEffect } from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Pressable, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -82,11 +82,13 @@ export default function FlashcardDetailScreen() {
     router.back();
   };
 
-  const panGesture = Gesture.Pan().onEnd((e) => {
-    if (e.translationY > SWIPE_DOWN_THRESHOLD_PX) {
-      runOnJS(goBack)();
-    }
-  });
+  const panGesture = Gesture.Pan()
+    .activeOffsetY(15) // require 15px drag before activating — lets taps pass through to children
+    .onEnd((e) => {
+      if (e.translationY > SWIPE_DOWN_THRESHOLD_PX) {
+        runOnJS(goBack)();
+      }
+    });
 
   // ─── Invalid card ID guard ────────────────────────────
   if (isNaN(numericId) || numericId <= 0) {
@@ -100,18 +102,16 @@ export default function FlashcardDetailScreen() {
   // ─── Render ───────────────────────────────────────────
   const content = (
     <View testID="flashcard-detail-screen" style={styles.fill}>
-      {/* Back button */}
-      <View style={[styles.backButton, { top: insets.top + 8 }]}>
-        <MaterialCommunityIcons
-          name="arrow-left"
-          size={28}
-          color={theme.colors.onSurface}
-          onPress={goBack}
-          accessible={true}
-          accessibilityLabel={t('detail.back')}
-          accessibilityRole="button"
-        />
-      </View>
+      {/* Back button — Pressable wrapper needed because GestureDetector steals icon onPress */}
+      <Pressable
+        style={[styles.backButton, { top: insets.top + 8 }]}
+        onPress={goBack}
+        hitSlop={12}
+        accessible={true}
+        accessibilityLabel={t('detail.back')}
+        accessibilityRole="button">
+        <MaterialCommunityIcons name="arrow-left" size={28} color={theme.colors.onSurface} />
+      </Pressable>
 
       <FlashcardDetail cardId={numericId} />
     </View>

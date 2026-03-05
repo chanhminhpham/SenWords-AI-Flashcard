@@ -11,6 +11,7 @@ import {
   userPreferences,
   wordFamilies,
   wordFamilyMembers,
+  microStories,
 } from '@/db/local-schema';
 
 // ---------------------------------------------------------------------------
@@ -34,6 +35,9 @@ export const wordFamilyInsertSchema = createInsertSchema(wordFamilies);
 export const wordFamilyMemberSelectSchema = createSelectSchema(wordFamilyMembers);
 export const wordFamilyMemberInsertSchema = createInsertSchema(wordFamilyMembers);
 
+export const microStorySelectSchema = createSelectSchema(microStories);
+export const microStoryInsertSchema = createInsertSchema(microStories);
+
 // ---------------------------------------------------------------------------
 // TypeScript types (inferred from Zod schemas)
 // ---------------------------------------------------------------------------
@@ -55,12 +59,34 @@ export type NewWordFamily = z.infer<typeof wordFamilyInsertSchema>;
 export type WordFamilyMember = z.infer<typeof wordFamilyMemberSelectSchema>;
 export type NewWordFamilyMember = z.infer<typeof wordFamilyMemberInsertSchema>;
 
+export type MicroStory = z.infer<typeof microStorySelectSchema>;
+export type NewMicroStory = z.infer<typeof microStoryInsertSchema>;
+
 // ---------------------------------------------------------------------------
 // Composite types (manual — joins across tables)
 // ---------------------------------------------------------------------------
 export interface WordFamilyWithMembers {
   family: WordFamily;
   members: (WordFamilyMember & { card: VocabularyCard | null })[];
+}
+
+// ---------------------------------------------------------------------------
+// Micro-story types (Story 2.4 — highlighted word context stories)
+// ---------------------------------------------------------------------------
+export interface MicroStoryHighlightedWord {
+  wordText: string;
+  startIndex: number;
+  endIndex: number;
+  definition: string;
+  partOfSpeech: string;
+}
+
+export interface StorySegment {
+  text: string;
+  isHighlighted: boolean;
+  word?: string;
+  definition?: string;
+  partOfSpeech?: string;
 }
 
 // ---------------------------------------------------------------------------
