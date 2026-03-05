@@ -156,6 +156,21 @@
     "emptyError": "No vocabulary available. Please update the app.",
     "loading": "Preparing your lesson..."
   },
+  "wordMap": {
+    "loading": "Drawing word map... 🗺️",
+    "error": "Could not draw the map. Try again later!",
+    "empty": "Learn more words to expand the map! 🌱",
+    "fullMapLink": "View full map",
+    "screenTitle": "Word Map",
+    "nodeTooltip": "{{word}}, {{pos}} — not in dictionary",
+    "microStoriesPlaceholder": "Content coming soon 🌱",
+    "a11y": {
+      "summary": "Word map for {{word}}, {{count}} connections",
+      "connection": "'{{root}}' connects to {{words}}",
+      "nodeSelected": "{{word}} selected, opening details",
+      "notInDictionary": "{{word}}, {{pos}} — not in dictionary"
+    }
+  },
   "wordFamily": {
     "chipLabel": "Word family",
     "sheetTitle": "Word family",

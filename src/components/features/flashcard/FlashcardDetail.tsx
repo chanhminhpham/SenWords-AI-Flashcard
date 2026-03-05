@@ -1,15 +1,17 @@
 // FlashcardDetail — 4-layer depth exploration tabbed view (Story 2.2)
 // This is the SHELL component. Stories 2.3-2.7 populate tab content.
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from 'react-native-paper';
 import { TabView, TabBar, type TabBarProps } from 'react-native-tab-view';
 import { useQuery } from '@tanstack/react-query';
+import { router } from 'expo-router';
 
 import { useTranslation } from 'react-i18next';
 
 import { KnowledgeDot } from '@/components/ui/KnowledgeDot';
+import { WordMapView } from '@/components/features/word-map/WordMapView';
 import { fetchCardById, fetchScheduleByCardId } from '@/services/vocabulary/vocabulary.service';
 import { useAppStore } from '@/stores/app.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -160,6 +162,9 @@ export function FlashcardDetail({ cardId }: FlashcardDetailProps) {
           />
         );
       case 'association':
+        return (
+          <AssociationTab cardId={cardId} deviceTier={deviceTier} reduceMotion={reduceMotion} />
+        );
       case 'production':
       case 'application':
         return (
@@ -400,6 +405,47 @@ const RecognitionTab = React.memo(function RecognitionTab({
   );
 });
 
+// ─── AssociationTab (Tab 2) — Word Map + Micro-stories placeholder
+interface AssociationTabProps {
+  cardId: number;
+  deviceTier: string;
+  reduceMotion: boolean;
+}
+
+const AssociationTab = React.memo(function AssociationTab({
+  cardId,
+  deviceTier,
+  reduceMotion,
+}: AssociationTabProps) {
+  const theme = useAppTheme();
+  const { t } = useTranslation();
+
+  const useSimpleBg = deviceTier === 'budget' || reduceMotion;
+  const gradientColors: [string, string] = useSimpleBg
+    ? [theme.colors.surface, theme.colors.surface]
+    : [theme.colors.surface, theme.colors.depth.layer2 + TAB_GRADIENT_OPACITY];
+
+  return (
+    <LinearGradient colors={gradientColors} style={styles.tabContent} testID="association-tab">
+      <WordMapView cardId={cardId} mode="mini" />
+      <Pressable
+        testID="full-map-link"
+        onPress={() => router.push({ pathname: '/(tabs)/progress/word-map', params: { cardId } })}
+        accessibilityRole="link">
+        <Text style={[styles.fullMapLink, { color: theme.colors.sky.text }]}>
+          {t('wordMap.fullMapLink')}
+        </Text>
+      </Pressable>
+      {/* Micro-stories placeholder (Story 2.4 fills this) */}
+      <View style={[styles.placeholder, { borderColor: theme.colors.surface }]}>
+        <Text style={{ color: theme.colors.onSurfaceVariant }}>
+          {t('wordMap.microStoriesPlaceholder')}
+        </Text>
+      </View>
+    </LinearGradient>
+  );
+});
+
 // ─── PlaceholderTab (Tabs 2-4) ──────────────────────────────
 interface PlaceholderTabProps {
   tabKey: string;
@@ -573,6 +619,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     alignItems: 'center',
+  },
+  // Full map link
+  fullMapLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   // Placeholder tab
   placeholderContainer: {

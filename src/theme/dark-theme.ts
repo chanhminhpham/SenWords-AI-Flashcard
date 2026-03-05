@@ -60,6 +60,13 @@ export const senWordDarkTheme: SenWordTheme = {
     lotus: {
       pink: DARK_COLORS.lotus.pink,
     },
+    wordMap: {
+      root: DARK_COLORS.wordMap.root,
+      family: DARK_COLORS.wordMap.family,
+      synonym: DARK_COLORS.wordMap.synonym,
+      related: DARK_COLORS.wordMap.related,
+      nodeText: DARK_COLORS.wordMap.nodeText,
+    },
   },
   spacing: {
     xs: 4,

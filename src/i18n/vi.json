@@ -156,6 +156,21 @@
     "emptyError": "Chưa có từ vựng. Vui lòng cập nhật ứng dụng.",
     "loading": "Đang chuẩn bị bài học..."
   },
+  "wordMap": {
+    "loading": "Đang vẽ bản đồ từ... 🗺️",
+    "error": "Không vẽ được bản đồ. Thử lại sau nhé!",
+    "empty": "Học thêm từ để mở rộng bản đồ! 🌱",
+    "fullMapLink": "Xem bản đồ đầy đủ",
+    "screenTitle": "Bản đồ từ vựng",
+    "nodeTooltip": "{{word}}, {{pos}} — chưa có trong từ điển",
+    "microStoriesPlaceholder": "Nội dung đang được chuẩn bị 🌱",
+    "a11y": {
+      "summary": "Bản đồ từ vựng cho {{word}}, {{count}} liên kết",
+      "connection": "'{{root}}' liên kết với {{words}}",
+      "nodeSelected": "{{word}} đã chọn, đang mở chi tiết",
+      "notInDictionary": "{{word}}, {{pos}} — chưa có trong từ điển"
+    }
+  },
   "wordFamily": {
     "chipLabel": "Gia đình từ",
     "sheetTitle": "Gia đình từ",

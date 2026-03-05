@@ -53,6 +53,19 @@ module.exports = {
           layer4: '#F5A623',
           'layer4-dark': '#F0B848',
         },
+        // ── Word Map ───────────────────────────────
+        wm: {
+          root: '#4A9FE5',
+          'root-dark': '#6BB5F0',
+          family: '#4ECBA0',
+          'family-dark': '#3DAA72',
+          synonym: '#E8739E',
+          'synonym-dark': '#F0A0BE',
+          related: '#9E9E9E',
+          'related-dark': '#757575',
+          'node-text': '#FFFFFF',
+          'node-text-dark': '#FFFFFF',
+        },
         // ── Surfaces ────────────────────────────────────
         'app-bg': '#FFFFFF',
         'app-bg-dark': '#1A2318',

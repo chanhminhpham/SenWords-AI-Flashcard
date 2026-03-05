@@ -9,6 +9,7 @@ module.exports = {
   },
   useSharedValue: (v) => ({ value: v }),
   useAnimatedStyle: (fn) => fn(),
+  useAnimatedProps: (fn) => fn(),
   withSpring: (v) => v,
   withTiming: (v) => v,
   withRepeat: (v) => v,
