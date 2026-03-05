@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { WordMapView } from '@/components/features/word-map/WordMapView';
 import { useAppStore } from '@/stores/app.store';
@@ -19,6 +20,7 @@ export default function WordMapScreen() {
   const deviceTier = useAppStore((s) => s.deviceTier);
   const reduceMotion = useAppStore((s) => s.shouldReduceMotion());
 
+  const insets = useSafeAreaInsets();
   const parsedCardId = Number(cardId) || 0;
 
   // ─── Pinch + Pan zoom ─────────────────────────────────
@@ -76,7 +78,7 @@ export default function WordMapScreen() {
       testID="word-map-screen"
       style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
+      <View style={[styles.header, { backgroundColor: theme.colors.surface, paddingTop: insets.top + 12 }]}>
         <Pressable
           testID="word-map-back"
           onPress={() => router.back()}
