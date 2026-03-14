@@ -10,7 +10,9 @@ import { router } from 'expo-router';
 
 import { useTranslation } from 'react-i18next';
 
+import { IpaDisplay } from '@/components/ui/IpaDisplay';
 import { KnowledgeDot } from '@/components/ui/KnowledgeDot';
+import { PronunciationPlayer } from '@/components/ui/PronunciationPlayer';
 import { VocabularyImage } from '@/components/ui/VocabularyImage';
 import { MicroStoryCard } from '@/components/features/micro-story/MicroStoryCard';
 import { WordMapView } from '@/components/features/word-map/WordMapView';
@@ -281,6 +283,8 @@ interface RecognitionTabProps {
     topicTags: string[] | null;
     imageUrl: string | null;
     mediaType: string;
+    audioUrlAmerican: string | null;
+    audioUrlBritish: string | null;
   } | null;
   depthLevel: number;
   isLoading: boolean;
@@ -350,11 +354,7 @@ const RecognitionTab = React.memo(function RecognitionTab({
       )}
 
       {/* IPA */}
-      {card.ipa && (
-        <View accessible={true} accessibilityLabel={`IPA: ${card.ipa}`}>
-          <Text style={[styles.recIpa, { color: theme.colors.nature.accent }]}>{card.ipa}</Text>
-        </View>
-      )}
+      <IpaDisplay ipa={card.ipa} testID="recognition-ipa" />
 
       {/* Difficulty + Topics */}
       <View
@@ -406,10 +406,14 @@ const RecognitionTab = React.memo(function RecognitionTab({
         testID="detail-image"
       />
 
-      {/* Audio placeholder */}
-      <View style={[styles.placeholder, { borderColor: theme.colors.surface }]}>
-        <Text style={{ color: theme.colors.onSurfaceVariant }}>{t('detail.audioPlaceholder')}</Text>
-      </View>
+      {/* Pronunciation player */}
+      <PronunciationPlayer
+        audioUrlUs={card.audioUrlAmerican}
+        audioUrlUk={card.audioUrlBritish}
+        ipa={card.ipa}
+        word={card.word}
+        testID="pronunciation-player"
+      />
     </LinearGradient>
   );
 });
@@ -592,10 +596,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontStyle: 'italic',
     lineHeight: 22,
-  },
-  recIpa: {
-    fontSize: 16,
-    textAlign: 'center',
   },
   tagRow: {
     flexDirection: 'row',

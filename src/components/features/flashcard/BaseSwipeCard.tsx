@@ -16,6 +16,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 
 import { KnowledgeDot } from '@/components/ui/KnowledgeDot';
+import { PronunciationPlayer } from '@/components/ui/PronunciationPlayer';
 import { VocabularyImage } from '@/components/ui/VocabularyImage';
 import { hapticSwipeComplete } from '@/services/haptics';
 import { useAppStore } from '@/stores/app.store';
@@ -266,6 +267,15 @@ export function BaseSwipeCard({
           {card.ipa && (
             <Text style={[styles.ipa, { color: theme.colors.nature.accent }]}>{card.ipa}</Text>
           )}
+
+          {/* Compact pronunciation player */}
+          <PronunciationPlayer
+            audioUrlUs={card.audioUrlAmerican}
+            audioUrlUk={card.audioUrlBritish}
+            word={card.word}
+            compact
+            testID="card-pronunciation"
+          />
 
           {/* Word (headword) */}
           <Text style={[styles.word, { color: theme.colors.onSurface }]}>{card.word}</Text>

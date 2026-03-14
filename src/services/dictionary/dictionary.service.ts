@@ -12,6 +12,8 @@ interface DictionaryEntry {
   topicTags: string[];
   imageUrl?: string | null;
   mediaType?: string;
+  audioUrlAmerican?: string | null;
+  audioUrlBritish?: string | null;
 }
 
 const STORAGE_BASE = '/storage/v1/object/public/';
@@ -22,6 +24,14 @@ export function resolveImageUrl(imageUrl: string | null | undefined): string | n
   if (imageUrl.startsWith('http')) return imageUrl;
   if (!ENV.SUPABASE_URL) return null;
   return `${ENV.SUPABASE_URL}${STORAGE_BASE}${imageUrl}`;
+}
+
+/** Resolve relative audio paths to full Supabase Storage URLs. */
+export function resolveAudioUrl(audioUrl: string | null | undefined): string | null {
+  if (!audioUrl) return null;
+  if (audioUrl.startsWith('http')) return audioUrl;
+  if (!ENV.SUPABASE_URL) return null;
+  return `${ENV.SUPABASE_URL}${STORAGE_BASE}${audioUrl}`;
 }
 
 /**
@@ -68,6 +78,8 @@ export async function loadDictionary(): Promise<{
               topicTags: entry.topicTags,
               imageUrl: entry.imageUrl ?? null,
               mediaType: entry.mediaType ?? 'none',
+              audioUrlAmerican: entry.audioUrlAmerican ?? null,
+              audioUrlBritish: entry.audioUrlBritish ?? null,
             }))
           )
           .run();

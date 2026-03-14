@@ -188,6 +188,14 @@
     "sheetTitle": "Gia đình từ",
     "noDefinition": "--"
   },
+  "pronunciation": {
+    "us": "Phát âm Mỹ",
+    "uk": "Phát âm Anh",
+    "tts": "Nghe phát âm",
+    "playingUs": "Đang phát âm Mỹ",
+    "playingUk": "Đang phát âm Anh",
+    "ipaLabel": "Phiên âm quốc tế"
+  },
   "accessibility": {
     "swipeRight": "Vuốt phải nếu biết từ này",
     "swipeCardHint": "Vuốt phải nếu biết, trái nếu chưa biết",

@@ -50,6 +50,14 @@ jest.mock('@/components/features/word-map/WordMapView', () => ({
   },
 }));
 
+jest.mock('@/services/dictionary/dictionary.service', () => ({
+  resolveAudioUrl: (url: string | null | undefined) => url ?? null,
+  resolveImageUrl: (url: string | null | undefined) => url ?? null,
+  loadDictionary: jest.fn(),
+  isDictionaryLoaded: jest.fn(),
+  getDictionaryCount: jest.fn(),
+}));
+
 jest.mock('@/components/ui/KnowledgeDot', () => ({
   KnowledgeDot: ({ depthLevel }: { depthLevel: number }) => {
     const { View, Text } = require('react-native');

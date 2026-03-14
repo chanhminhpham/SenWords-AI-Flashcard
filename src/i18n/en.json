@@ -188,6 +188,14 @@
     "sheetTitle": "Word family",
     "noDefinition": "--"
   },
+  "pronunciation": {
+    "us": "American pronunciation",
+    "uk": "British pronunciation",
+    "tts": "Listen to pronunciation",
+    "playingUs": "Playing American pronunciation",
+    "playingUk": "Playing British pronunciation",
+    "ipaLabel": "Phonetic transcription"
+  },
   "accessibility": {
     "swipeRight": "Swipe right if you know this word",
     "swipeCardHint": "Swipe right if you know, left if you don't",

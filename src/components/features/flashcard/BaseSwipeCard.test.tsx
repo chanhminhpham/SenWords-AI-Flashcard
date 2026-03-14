@@ -13,6 +13,7 @@ jest.mock('react-native-gesture-handler', () => require('@/__test-utils__/gestur
 jest.mock('@/theme/use-app-theme', () => require('@/__test-utils__/theme-mock'));
 jest.mock('@/services/haptics', () => ({
   hapticSwipeComplete: jest.fn(),
+  hapticTabSwitch: jest.fn(),
 }));
 jest.mock('@/stores/app.store', () => ({
   useAppStore: jest.fn(
