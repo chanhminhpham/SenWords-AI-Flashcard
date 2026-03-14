@@ -5,6 +5,11 @@ jest.mock('react-native-gesture-handler', () => require('@/__test-utils__/gestur
 jest.mock('@/theme/use-app-theme', () => require('@/__test-utils__/theme-mock'));
 jest.mock('@expo/vector-icons', () => require('@/__test-utils__/vector-icons'));
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: jest.fn().mockReturnValue({ cardId: '42' }),
