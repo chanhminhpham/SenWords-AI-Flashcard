@@ -5,6 +5,10 @@ import {
 } from '@/services/dictionary/dictionary.service';
 import { runInTransaction } from '@/db';
 
+jest.mock('@/config/env', () => ({
+  ENV: { SUPABASE_URL: 'https://test.supabase.co', SUPABASE_ANON_KEY: 'test-key', SENTRY_DSN: '' },
+}));
+
 // Chainable mock that supports: db.select({}).from(t).all()
 // and db.insert(t).values([]).run()
 const mockAllFn = jest.fn();
@@ -17,11 +21,13 @@ chainable.limit = jest.fn().mockReturnValue(chainable);
 chainable.where = jest.fn().mockReturnValue(chainable);
 chainable.from = jest.fn().mockReturnValue(chainable);
 chainable.values = jest.fn().mockReturnValue(chainable);
+chainable.set = jest.fn().mockReturnValue(chainable);
 
 jest.mock('@/db', () => ({
   getDb: jest.fn().mockReturnValue({
     select: jest.fn().mockReturnValue(chainable),
     insert: jest.fn().mockReturnValue(chainable),
+    update: jest.fn().mockReturnValue(chainable),
   }),
   vocabularyCards: { id: 'id' },
   runInTransaction: jest.fn((fn: () => void) => fn()),
@@ -48,6 +54,8 @@ jest.mock(
       exampleSentence: 'I need a book for this.',
       difficultyLevel: 0,
       topicTags: ['General', 'Reading'],
+      imageUrl: 'vocabulary-images/book_card.webp',
+      mediaType: 'image',
     },
   ],
   { virtual: true }
@@ -62,6 +70,8 @@ describe('dictionary.service', () => {
     it('returns success with count when dictionary already loaded', async () => {
       // COUNT query returns existing count
       mockAllFn.mockReturnValueOnce([{ value: 3 }]);
+      // backfillMediaType COUNT query — already has image cards
+      mockAllFn.mockReturnValueOnce([{ value: 100 }]);
 
       const result = await loadDictionary();
       expect(result.success).toBe(true);
@@ -76,6 +86,22 @@ describe('dictionary.service', () => {
       expect(result.success).toBe(true);
       expect(result.count).toBe(2);
       expect(mockRunFn).toHaveBeenCalled();
+    });
+
+    it('stores raw imageUrl and mediaType from dictionary JSON', async () => {
+      mockAllFn.mockReturnValueOnce([{ value: 0 }]);
+
+      await loadDictionary();
+
+      const insertedValues = chainable.values.mock.calls[0][0] as {
+        imageUrl: string | null;
+        mediaType: string;
+      }[];
+      // 'hello' has no imageUrl → null
+      expect(insertedValues[0].imageUrl).toBeNull();
+      // 'book' has relative imageUrl → stored as-is (resolved at render time)
+      expect(insertedValues[1].imageUrl).toBe('vocabulary-images/book_card.webp');
+      expect(insertedValues[1].mediaType).toBe('image');
     });
 
     it('wraps inserts in a transaction', async () => {

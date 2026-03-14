@@ -139,6 +139,8 @@
     "back": "Quay lại danh sách học",
     "tabContent": "{{count}} nội dung",
     "depth": "Tầng {{level}}",
+    "imageAlt": "Minh họa từ {{word}}",
+    "imageLoading": "Đang tải hình ảnh...",
     "imagePlaceholder": "Hình ảnh sẽ có sớm 🌿",
     "audioPlaceholder": "Sắp có 🎧",
     "depthProgress": "Tiến trình tầng {{current}} / 4",

@@ -5,6 +5,7 @@ import m0000 from './0000_solid_texas_twister.sql';
 import m0001 from './0001_spicy_risque.sql';
 import m0002 from './0002_curvy_sleepwalker.sql';
 import m0003 from './0003_serious_young_avengers.sql';
+import m0004 from './0004_lying_spacker_dave.sql';
 
 export default {
   journal,
@@ -13,5 +14,6 @@ export default {
     m0001,
     m0002,
     m0003,
+    m0004,
   },
 };

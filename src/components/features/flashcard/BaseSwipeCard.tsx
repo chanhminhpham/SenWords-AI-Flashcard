@@ -16,6 +16,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 
 import { KnowledgeDot } from '@/components/ui/KnowledgeDot';
+import { VocabularyImage } from '@/components/ui/VocabularyImage';
 import { hapticSwipeComplete } from '@/services/haptics';
 import { useAppStore } from '@/stores/app.store';
 import { useAppTheme } from '@/theme/use-app-theme';
@@ -250,6 +251,16 @@ export function BaseSwipeCard({
               {t('learn.depth', 'Tầng {{level}}', { level: depthLevel })}
             </Text>
           </View>
+
+          {/* Vocabulary image */}
+          <VocabularyImage
+            imageUrl={card.imageUrl}
+            mediaType={card.mediaType as 'image' | 'gif' | 'none'}
+            word={card.word}
+            size="card"
+            recyclingKey={String(card.id)}
+            testID="card-image"
+          />
 
           {/* IPA pronunciation */}
           {card.ipa && (

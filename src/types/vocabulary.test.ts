@@ -23,6 +23,7 @@ describe('vocabulary Zod schemas', () => {
         audioUrlAmerican: null,
         audioUrlBritish: null,
         imageUrl: null,
+        mediaType: 'none',
         difficultyLevel: 0,
         topicTags: ['General', 'Daily Life'],
         createdAt: '2026-01-01 00:00:00',

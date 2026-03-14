@@ -28,6 +28,7 @@ export const vocabularyCardsServer = pgTable('vocabulary_cards', {
   audioUrlAmerican: text('audio_url_american'),
   audioUrlBritish: text('audio_url_british'),
   imageUrl: text('image_url'),
+  mediaType: text('media_type').notNull().default('none'),
   difficultyLevel: integer('difficulty_level').notNull().default(0),
   topicTags: jsonb('topic_tags').$type<string[]>().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

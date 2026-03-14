@@ -1,8 +1,22 @@
 // Learning Engine Store — Client-side learning session state (Story 1.6)
 // DO NOT duplicate server data here. TanStack Query owns server state (vocabulary, SR schedule).
+import { Image } from 'expo-image';
 import { create } from 'zustand';
 
+import { useAppStore } from '@/stores/app.store';
 import type { VocabularyCard } from '@/types/vocabulary';
+
+/** Prefetch images for the next N cards in the queue (Story 2.5). */
+function prefetchUpcomingImages(cards: VocabularyCard[], fromIndex: number): void {
+  const count = useAppStore.getState().deviceTier === 'budget' ? 2 : 3;
+  const urls = cards
+    .slice(fromIndex, fromIndex + count)
+    .map((c) => c.imageUrl)
+    .filter((url): url is string => url != null && url !== '');
+  if (urls.length > 0) {
+    Image.prefetch(urls).catch(() => {});
+  }
+}
 
 export interface UndoAction {
   cardId: number;
@@ -54,6 +68,8 @@ export const useLearningEngine = create<LearningEngineState>((set, get) => ({
       undoBuffer: null,
       undoTimeoutId: null,
     });
+    // Prefetch images for the first upcoming cards (Story 2.5)
+    prefetchUpcomingImages(cards, 0);
   },
 
   /**
@@ -79,11 +95,14 @@ export const useLearningEngine = create<LearningEngineState>((set, get) => ({
       get().clearUndoBuffer();
     }, 3000);
 
+    const nextIndex = currentIndex + 1;
     set({
-      currentIndex: currentIndex + 1,
+      currentIndex: nextIndex,
       undoBuffer: undoAction,
       undoTimeoutId: newTimeoutId,
     });
+    // Prefetch images for the next cards ahead (Story 2.5)
+    prefetchUpcomingImages(get().queueCards, nextIndex + 1);
   },
 
   /**

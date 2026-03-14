@@ -139,6 +139,8 @@
     "back": "Back to learning list",
     "tabContent": "{{count}} items",
     "depth": "Layer {{level}}",
+    "imageAlt": "{{word}} illustration",
+    "imageLoading": "Loading image...",
     "imagePlaceholder": "Images coming soon 🌿",
     "audioPlaceholder": "Coming soon 🎧",
     "depthProgress": "Depth progress {{current}} / 4",

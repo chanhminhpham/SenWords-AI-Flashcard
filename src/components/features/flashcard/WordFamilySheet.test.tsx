@@ -57,6 +57,7 @@ const mockData: WordFamilyWithMembers = {
         audioUrlAmerican: null,
         audioUrlBritish: null,
         imageUrl: null,
+        mediaType: 'none',
         difficultyLevel: 2,
         topicTags: [],
         createdAt: '',

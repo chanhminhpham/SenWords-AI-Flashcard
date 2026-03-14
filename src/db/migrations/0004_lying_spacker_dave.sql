@@ -1,0 +1,1 @@
+ALTER TABLE `vocabulary_cards` ADD `media_type` text DEFAULT 'none' NOT NULL;

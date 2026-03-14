@@ -16,6 +16,7 @@ export const vocabularyCards = sqliteTable(
     audioUrlAmerican: text('audio_url_american'),
     audioUrlBritish: text('audio_url_british'),
     imageUrl: text('image_url'),
+    mediaType: text('media_type').notNull().default('none'),
     difficultyLevel: integer('difficulty_level').notNull().default(0),
     topicTags: text('topic_tags', { mode: 'json' }).$type<string[]>().default([]),
     createdAt: text('created_at')

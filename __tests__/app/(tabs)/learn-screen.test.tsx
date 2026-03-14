@@ -79,6 +79,7 @@ const mockCard: VocabularyCard = {
   audioUrlAmerican: null,
   audioUrlBritish: null,
   imageUrl: null,
+  mediaType: 'none',
   difficultyLevel: 1,
   topicTags: ['greetings'],
   createdAt: '2024-01-01 00:00:00',

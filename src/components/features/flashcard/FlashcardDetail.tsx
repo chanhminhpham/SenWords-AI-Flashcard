@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { KnowledgeDot } from '@/components/ui/KnowledgeDot';
+import { VocabularyImage } from '@/components/ui/VocabularyImage';
 import { MicroStoryCard } from '@/components/features/micro-story/MicroStoryCard';
 import { WordMapView } from '@/components/features/word-map/WordMapView';
 import { useMicroStories } from '@/hooks/use-micro-stories';
@@ -279,6 +280,7 @@ interface RecognitionTabProps {
     difficultyLevel: number;
     topicTags: string[] | null;
     imageUrl: string | null;
+    mediaType: string;
   } | null;
   depthLevel: number;
   isLoading: boolean;
@@ -395,10 +397,14 @@ const RecognitionTab = React.memo(function RecognitionTab({
         ))}
       </View>
 
-      {/* Image placeholder */}
-      <View style={[styles.placeholder, { borderColor: theme.colors.surface }]}>
-        <Text style={{ color: theme.colors.onSurfaceVariant }}>{t('detail.imagePlaceholder')}</Text>
-      </View>
+      {/* Vocabulary image */}
+      <VocabularyImage
+        imageUrl={card.imageUrl}
+        mediaType={card.mediaType as 'image' | 'gif' | 'none'}
+        word={card.word}
+        size="detail"
+        testID="detail-image"
+      />
 
       {/* Audio placeholder */}
       <View style={[styles.placeholder, { borderColor: theme.colors.surface }]}>

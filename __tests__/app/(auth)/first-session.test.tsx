@@ -13,12 +13,14 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn() },
 }));
 
-jest.mock('@/stores/app.store', () => ({
-  useAppStore: jest.fn(
-    (selector: (s: { shouldReduceMotion: () => boolean; deviceTier: string }) => unknown) =>
-      selector({ shouldReduceMotion: () => true, deviceTier: 'standard' })
-  ),
-}));
+jest.mock('@/stores/app.store', () => {
+  const state = { shouldReduceMotion: () => true, deviceTier: 'standard' };
+  const useAppStore = Object.assign(
+    jest.fn((selector: (s: typeof state) => unknown) => selector(state)),
+    { getState: jest.fn(() => state) }
+  );
+  return { useAppStore };
+});
 
 jest.mock('@/theme/use-app-theme', () => require('../../../src/__test-utils__/theme-mock'));
 
